@@ -1,218 +1,136 @@
+import React from "react";
 import {
-  Text,
   View,
-  Button,
-  Image,
+  Text,
+  StyleSheet,
   ScrollView,
   TouchableOpacity,
-  StyleSheet,
 } from "react-native";
-import { withAuthenticator } from "@aws-amplify/ui-react-native";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-// Fix the Auth import for Amplify v6
-import { signOut as amplifySignOut, getCurrentUser } from "aws-amplify/auth";
-import { globalStyles } from "../../../styles/globalStyles"; // Updated import path
+import { Ionicons } from "@expo/vector-icons";
 
-function CharitiesScreen({
-  signOut: authSignOut,
-  user: authUser,
-}: {
-  signOut?: () => Promise<void>;
-  user?: any;
-}) {
+export default function CharityServicesScreen() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
 
-  // Sample charity data
-  const charities = [
+  // Sample charity services data
+  const charityServices = [
     {
       id: "1",
-      name: "Wounded Warrior Project",
-      type: "Veteran Support",
-      image: "https://via.placeholder.com/100",
-      description:
-        "Providing programs and services to severely injured service members during the time between active duty and transition to civilian life.",
+      name: "Food Bank",
+      description: "Donate to local food banks",
+      icon: "nutrition",
     },
     {
       id: "2",
-      name: "Disabled American Veterans",
-      type: "Advocacy & Benefits",
-      image: "https://via.placeholder.com/100",
-      description:
-        "Providing free, professional assistance to veterans of all generations in obtaining VA and other government benefits.",
+      name: "Clothing Drive",
+      description: "Donate clothes to those in need",
+      icon: "shirt",
     },
     {
       id: "3",
-      name: "Fisher House Foundation",
-      type: "Family Support",
-      image: "https://via.placeholder.com/100",
-      description:
-        "Providing comfort homes where military & veterans families can stay at no cost while a loved one is receiving treatment.",
+      name: "Volunteer",
+      description: "Volunteer your time for community service",
+      icon: "people",
     },
     {
       id: "4",
-      name: "Gary Sinise Foundation",
-      type: "Multiple Programs",
-      image: "https://via.placeholder.com/100",
-      description:
-        "Serving our nation by honoring our defenders, veterans, first responders, their families, and those in need.",
+      name: "Fundraising",
+      description: "Support fundraising campaigns",
+      icon: "cash",
+    },
+    {
+      id: "5",
+      name: "Education",
+      description: "Support educational programs",
+      icon: "school",
+    },
+    {
+      id: "6",
+      name: "Healthcare",
+      description: "Support healthcare initiatives",
+      icon: "medkit",
     },
   ];
 
-  useEffect(() => {
-    async function fetchUser() {
-      try {
-        // If user is passed from withAuthenticator, use it
-        if (authUser) {
-          setUser(authUser as any);
-        } else {
-          // Otherwise fetch the current user manually
-          const userData = await getCurrentUser();
-          setUser(userData as any);
-        }
-      } catch (error) {
-        console.error("Error fetching user:", error);
-        // If we can't get the user, redirect to home
-        router.replace("/");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchUser();
-  }, [authUser, router]);
-
-  const handleSignOut = async () => {
-    try {
-      if (authSignOut) {
-        await authSignOut();
-      } else {
-        await amplifySignOut();
-      }
-      router.replace("/");
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
-  };
-
-  const navigateToCharity = (charityId: string) => {
-    router.push(`/protected/charity/details/${charityId}`);
-  };
-
-  if (loading) {
-    return (
-      <View style={globalStyles.container}>
-        <Text style={globalStyles.content}>Loading charities content...</Text>
-      </View>
-    );
-  }
-
-  if (!user) {
-    return (
-      <View style={globalStyles.container}>
-        <Text style={globalStyles.content}>
-          Authentication required. Redirecting...
-        </Text>
-      </View>
-    );
-  }
-
   return (
-    <ScrollView style={styles.scrollContainer}>
-      <View style={globalStyles.container}>
-        <Text style={globalStyles.title}>Charities Page</Text>
-        <Text style={globalStyles.subtitle}>
-          Welcome, {user.signInDetails?.loginId || "User"}
-        </Text>
-        <Text style={globalStyles.content}>
-          Below are veteran-focused charities for you to explore
-        </Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text style={styles.headerText}>Charity Services</Text>
+      <Text style={styles.subHeaderText}>
+        Make a difference in your community
+      </Text>
 
-        {/* Charity List */}
-        <View style={styles.charitiesContainer}>
-          {charities.map((charity) => (
-            <TouchableOpacity
-              key={charity.id}
-              style={styles.charityCard}
-              onPress={() => navigateToCharity(charity.id)}
-            >
-              <Image
-                source={{ uri: charity.image }}
-                style={styles.charityImage}
-              />
-              <View style={styles.charityInfo}>
-                <Text style={styles.charityName}>{charity.name}</Text>
-                <Text style={styles.charityType}>{charity.type}</Text>
-                <Text style={styles.viewMore}>View Details →</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <View style={styles.buttonContainer}>
-          <Button title="Sign Out" onPress={handleSignOut} />
-          <Button
-            title="Back to Home"
-            onPress={() => router.back()}
-            color="#666"
-          />
-        </View>
+      <View style={styles.servicesGrid}>
+        {charityServices.map((service) => (
+          <TouchableOpacity
+            key={service.id}
+            style={styles.serviceCard}
+            onPress={() => router.push(`/protected/charity/${service.id}`)}
+          >
+            <View style={styles.iconContainer}>
+              <Ionicons name={service.icon} size={32} color="#3498db" />
+            </View>
+            <Text style={styles.serviceName}>{service.name}</Text>
+            <Text style={styles.serviceDescription}>{service.description}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
     </ScrollView>
   );
-} // Keep the specific styles needed for this page
+}
+
 const styles = StyleSheet.create({
-  scrollContainer: {
+  container: {
     flex: 1,
-    backgroundColor: "#13345c", // Match the global container background
+    backgroundColor: "#f5f5f5",
   },
-  charitiesContainer: {
-    width: "100%",
-    marginBottom: 30,
+  scrollView: {
+    flex: 1,
   },
-  charityCard: {
+  content: {
+    padding: 16,
+    paddingBottom: 80,
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#13345c",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  subHeaderText: {
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 24,
+    textAlign: "center",
+  },
+  servicesGrid: {
     flexDirection: "row",
-    backgroundColor: "#f9f9f9",
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 15,
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  serviceCard: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    width: "48%",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 2,
     elevation: 2,
   },
-  charityImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 10,
-    marginRight: 15,
+  iconContainer: {
+    marginBottom: 12,
   },
-  charityInfo: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  charityName: {
-    fontSize: 18,
+  serviceName: {
+    fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 5,
-    color: "#333", // Dark text for light background cards
-  },
-  charityType: {
-    fontSize: 14,
-    color: "#666",
+    color: "#13345c",
     marginBottom: 8,
   },
-  viewMore: {
+  serviceDescription: {
     fontSize: 14,
-    color: "#3498db",
-    fontWeight: "500",
-  },
-  buttonContainer: {
-    width: "100%",
-    marginTop: 10,
+    color: "#666",
   },
 });
-
-export default withAuthenticator(CharitiesScreen);

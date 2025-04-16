@@ -6,24 +6,23 @@ export const globalStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
-    backgroundColor: "#13345c",
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
-    color: "#fff",
+    color: "#13345c",
   },
   subtitle: {
     fontSize: 18,
     marginBottom: 10,
-    color: "#fff",
+    color: "#13345c",
   },
   content: {
     fontSize: 16,
     marginBottom: 30,
     textAlign: "center",
-    color: "#fff",
+    color: "#13345c",
   },
   // Add any other common styles you want to reuse
 });

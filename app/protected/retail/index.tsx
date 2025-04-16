@@ -1,265 +1,140 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
   StyleSheet,
-  FlatList,
+  ScrollView,
   TouchableOpacity,
-  Image,
-  ActivityIndicator,
 } from "react-native";
-import { Stack, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import CustomNavBar from "../../../components/CustomNavBar";
 
-// Mock data for retail services
-const retailServices = [
-  {
-    id: "1",
-    name: "Grocery Delivery",
-    description: "Get groceries delivered to your doorstep",
-    image: "https://via.placeholder.com/150",
-    category: "Food & Groceries",
-  },
-  {
-    id: "2",
-    name: "Clothing Store",
-    description: "Shop the latest fashion trends",
-    image: "https://via.placeholder.com/150",
-    category: "Fashion",
-  },
-  {
-    id: "3",
-    name: "Electronics Shop",
-    description: "Find the latest tech gadgets",
-    image: "https://via.placeholder.com/150",
-    category: "Electronics",
-  },
-  {
-    id: "4",
-    name: "Home Goods",
-    description: "Everything you need for your home",
-    image: "https://via.placeholder.com/150",
-    category: "Home & Garden",
-  },
-  {
-    id: "5",
-    name: "Pharmacy Services",
-    description: "Get medications and health products",
-    image: "https://via.placeholder.com/150",
-    category: "Health",
-  },
-  {
-    id: "6",
-    name: "Book Store",
-    description: "Discover your next favorite read",
-    image: "https://via.placeholder.com/150",
-    category: "Books & Media",
-  },
-];
-
-// Categories for filtering
-const categories = [
-  "All",
-  "Food & Groceries",
-  "Fashion",
-  "Electronics",
-  "Home & Garden",
-  "Health",
-  "Books & Media",
-];
-
-const RetailServicesScreen = () => {
-  const [loading, setLoading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [filteredServices, setFilteredServices] = useState(retailServices);
+export default function RetailServicesScreen() {
   const router = useRouter();
 
-  useEffect(() => {
-    // Filter services based on selected category
-    if (selectedCategory === "All") {
-      setFilteredServices(retailServices);
-    } else {
-      setFilteredServices(
-        retailServices.filter(
-          (service) => service.category === selectedCategory
-        )
-      );
-    }
-  }, [selectedCategory]);
-
-  const renderCategoryItem = ({ item }: { item: string }) => (
-    <TouchableOpacity
-      style={[
-        styles.categoryItem,
-        selectedCategory === item && styles.selectedCategoryItem,
-      ]}
-      onPress={() => setSelectedCategory(item)}
-    >
-      <Text
-        style={[
-          styles.categoryText,
-          selectedCategory === item && styles.selectedCategoryText,
-        ]}
-      >
-        {item}
-      </Text>
-    </TouchableOpacity>
-  );
-
-  const renderServiceItem = ({
-    item,
-  }: {
-    item: (typeof retailServices)[0];
-  }) => (
-    <TouchableOpacity
-      style={styles.serviceItem}
-      onPress={() => router.push(`/protected/retail/${item.id}`)}
-    >
-      <Image source={{ uri: item.image }} style={styles.serviceImage} />
-      <View style={styles.serviceInfo}>
-        <Text style={styles.serviceName}>{item.name}</Text>
-        <Text style={styles.serviceDescription}>{item.description}</Text>
-        <View style={styles.serviceCategory}>
-          <Text style={styles.serviceCategoryText}>{item.category}</Text>
-        </View>
-      </View>
-      <Ionicons name="chevron-forward" size={24} color="#13345c" />
-    </TouchableOpacity>
-  );
+  // Sample retail services data
+  const retailServices = [
+    {
+      id: "1",
+      name: "Grocery Shopping",
+      description: "Order groceries online",
+      icon: "basket",
+    },
+    {
+      id: "2",
+      name: "Clothing",
+      description: "Shop for clothes and accessories",
+      icon: "shirt",
+    },
+    {
+      id: "3",
+      name: "Electronics",
+      description: "Latest gadgets and devices",
+      icon: "laptop",
+    },
+    {
+      id: "4",
+      name: "Home Goods",
+      description: "Furniture and home decor",
+      icon: "home",
+    },
+    {
+      id: "5",
+      name: "Beauty Products",
+      description: "Cosmetics and personal care",
+      icon: "sparkles",
+    },
+    {
+      id: "6",
+      name: "Books & Media",
+      description: "Books, movies, and music",
+      icon: "book",
+    },
+  ];
 
   return (
     <View style={styles.container}>
-      <Stack.Screen
-        options={{
-          title: "Retail Services",
-          headerStyle: {
-            backgroundColor: "#3498db",
-          },
-          headerTintColor: "#fff",
-          headerTitleStyle: {
-            fontWeight: "bold",
-          },
-        }}
-      />
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+      >
+        <Text style={styles.headerText}>Retail Services</Text>
+        <Text style={styles.subHeaderText}>Shop from our trusted partners</Text>
 
-      <View style={styles.categoriesContainer}>
-        <FlatList
-          data={categories}
-          renderItem={renderCategoryItem}
-          keyExtractor={(item) => item}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoriesList}
-        />
-      </View>
-
-      {loading ? (
-        <ActivityIndicator size="large" color="#3498db" style={styles.loader} />
-      ) : (
-        <FlatList
-          data={filteredServices}
-          renderItem={renderServiceItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.servicesList}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
-
-      <CustomNavBar />
+        <View style={styles.servicesGrid}>
+          {retailServices.map((service) => (
+            <TouchableOpacity
+              key={service.id}
+              style={styles.serviceCard}
+              onPress={() => router.push(`/protected/retail/${service.id}`)}
+            >
+              <View style={styles.iconContainer}>
+                <Ionicons name={service.icon} size={32} color="#3498db" />
+              </View>
+              <Text style={styles.serviceName}>{service.name}</Text>
+              <Text style={styles.serviceDescription}>
+                {service.description}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
   },
-  categoriesContainer: {
-    backgroundColor: "#fff",
-    paddingVertical: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-    zIndex: 10,
+  scrollView: {
+    flex: 1,
   },
-  categoriesList: {
-    paddingHorizontal: 10,
-  },
-  categoryItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginHorizontal: 5,
-    borderRadius: 20,
-    backgroundColor: "#f0f0f0",
-  },
-  selectedCategoryItem: {
-    backgroundColor: "#3498db",
-  },
-  categoryText: {
-    fontSize: 14,
-    color: "#13345c",
-  },
-  selectedCategoryText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  servicesList: {
+  content: {
     padding: 16,
-    paddingBottom: 80, // Space for navbar
   },
-  serviceItem: {
+  headerText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#13345c",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  subHeaderText: {
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 24,
+    textAlign: "center",
+  },
+  servicesGrid: {
     flexDirection: "row",
-    alignItems: "center",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  serviceCard: {
     backgroundColor: "#fff",
     borderRadius: 8,
-    marginBottom: 12,
-    padding: 12,
+    padding: 16,
+    marginBottom: 16,
+    width: "48%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
   },
-  serviceImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 8,
-    marginRight: 12,
-  },
-  serviceInfo: {
-    flex: 1,
+  iconContainer: {
+    marginBottom: 12,
   },
   serviceName: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#13345c",
-    marginBottom: 4,
+    marginBottom: 8,
   },
   serviceDescription: {
     fontSize: 14,
     color: "#666",
-    marginBottom: 6,
-  },
-  serviceCategory: {
-    backgroundColor: "#e8f4fd",
-    alignSelf: "flex-start",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 12,
-  },
-  serviceCategoryText: {
-    fontSize: 12,
-    color: "#3498db",
-  },
-  loader: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
 });
-
-export default RetailServicesScreen;

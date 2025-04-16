@@ -7,10 +7,9 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import { Stack, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { getCurrentUser, signOut } from "aws-amplify/auth";
-import CustomNavBar from "../components/CustomNavBar";
 
 const MenuScreen = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -19,19 +18,29 @@ const MenuScreen = () => {
 
   // Check authentication status
   useEffect(() => {
-    checkAuthStatus();
-  }, []);
+    let isMounted = true;
 
-  const checkAuthStatus = async () => {
-    try {
-      await getCurrentUser();
-      setIsAuthenticated(true);
-      setLoading(false);
-    } catch (error) {
-      setIsAuthenticated(false);
-      setLoading(false);
-    }
-  };
+    const checkAuthStatus = async () => {
+      try {
+        await getCurrentUser();
+        if (isMounted) {
+          setIsAuthenticated(true);
+          setLoading(false);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setIsAuthenticated(false);
+          setLoading(false);
+        }
+      }
+    };
+
+    checkAuthStatus();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSignOut = async () => {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
@@ -85,50 +94,14 @@ const MenuScreen = () => {
   ];
 
   return (
-    <View style={styles.container}>
-      <Stack.Screen
-        options={{
-          title: "Menu",
-          headerStyle: {
-            backgroundColor: "#3498db",
-          },
-          headerTintColor: "#fff",
-          headerTitleStyle: {
-            fontWeight: "bold",
-          },
-        }}
-      />
-
-      <ScrollView style={styles.scrollView}>
-        {/* User-specific section */}
-        {isAuthenticated && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>My Account</Text>
-            {authenticatedMenuItems.map((item, index) => (
-              <TouchableOpacity
-                key={`auth-${index}`}
-                style={styles.menuItem}
-                onPress={() => router.push(item.route)}
-              >
-                <Ionicons name={item.icon} size={24} color="#13345c" />
-                <Text style={styles.menuItemText}>{item.title}</Text>
-                <Ionicons
-                  name="chevron-forward"
-                  size={20}
-                  color="#13345c"
-                  style={styles.chevron}
-                />
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-        {/* Common menu items */}
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      {/* User-specific section */}
+      {isAuthenticated && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>General</Text>
-          {commonMenuItems.map((item, index) => (
+          <Text style={styles.sectionTitle}>My Account</Text>
+          {authenticatedMenuItems.map((item, index) => (
             <TouchableOpacity
-              key={`common-${index}`}
+              key={`auth-${index}`}
               style={styles.menuItem}
               onPress={() => router.push(item.route)}
             >
@@ -143,23 +116,42 @@ const MenuScreen = () => {
             </TouchableOpacity>
           ))}
         </View>
+      )}
 
-        {/* Sign Out button - only shown when authenticated */}
-        {isAuthenticated && (
-          <View style={styles.signOutSection}>
-            <TouchableOpacity
-              style={styles.signOutButton}
-              onPress={handleSignOut}
-            >
-              <Ionicons name="log-out" size={24} color="#fff" />
-              <Text style={styles.signOutText}>Sign Out</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </ScrollView>
+      {/* Common menu items */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>General</Text>
+        {commonMenuItems.map((item, index) => (
+          <TouchableOpacity
+            key={`common-${index}`}
+            style={styles.menuItem}
+            onPress={() => router.push(item.route)}
+          >
+            <Ionicons name={item.icon} size={24} color="#13345c" />
+            <Text style={styles.menuItemText}>{item.title}</Text>
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color="#13345c"
+              style={styles.chevron}
+            />
+          </TouchableOpacity>
+        ))}
+      </View>
 
-      <CustomNavBar />
-    </View>
+      {/* Sign Out button - only shown when authenticated */}
+      {isAuthenticated && (
+        <View style={styles.signOutSection}>
+          <TouchableOpacity
+            style={styles.signOutButton}
+            onPress={handleSignOut}
+          >
+            <Ionicons name="log-out" size={24} color="#fff" />
+            <Text style={styles.signOutText}>Sign Out</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </ScrollView>
   );
 };
 
@@ -168,9 +160,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f5f5",
   },
-  scrollView: {
-    flex: 1,
-    marginBottom: 60, // Space for the navbar
+  content: {
+    paddingBottom: 80, // Add padding at the bottom for the bottom nav bar
   },
   section: {
     margin: 16,
@@ -209,6 +200,7 @@ const styles = StyleSheet.create({
   signOutSection: {
     margin: 16,
     marginTop: 8,
+    marginBottom: 80,
   },
   signOutButton: {
     flexDirection: "row",

@@ -57,7 +57,6 @@ const CustomNavBar: React.FC = () => {
       | "/protected/retail"
       | "/protected/profile"
       | "/menu"
-      | "/protected"
   ) => {
     router.push(path);
   };
@@ -66,7 +65,7 @@ const CustomNavBar: React.FC = () => {
   const isActive = (path: string) => {
     // If we're authenticating, ONLY the sign-in tab should be active
     if (isAuthenticating) {
-      return path === "/protected";
+      return path === "/auth";
     }
 
     // Normal active tab logic for authenticated users
@@ -74,7 +73,7 @@ const CustomNavBar: React.FC = () => {
     if (path === "/menu" && pathname === "/menu") return true;
     if (
       path !== "/" &&
-      path !== "/protected" &&
+      path !== "/auth" &&
       path !== "/menu" &&
       pathname.includes(path)
     )
@@ -135,7 +134,7 @@ const CustomNavBar: React.FC = () => {
           if (isAuthenticated) {
             navigateTo("/protected/retail");
           } else {
-            navigateTo("/protected");
+            navigateTo("/auth"); // Updated from "/protected" to "/auth"
           }
         }}
       >
@@ -180,21 +179,18 @@ const CustomNavBar: React.FC = () => {
           </Text>
         </TouchableOpacity>
       ) : (
-        // Sign In Tab (when not authenticated)
+        // Sign In Tab (when not authenticated) - Updated from "/protected" to "/auth"
         <TouchableOpacity
-          style={[styles.tab, isActive("/protected") && styles.activeTab]}
-          onPress={() => navigateTo("/protected")}
+          style={[styles.tab, isActive("/auth") && styles.activeTab]}
+          onPress={() => navigateTo("/auth")}
         >
           <Ionicons
             name="log-in"
             size={24}
-            color={isActive("/protected") ? "#3498db" : "#13345c"}
+            color={isActive("/auth") ? "#3498db" : "#13345c"}
           />
           <Text
-            style={[
-              styles.tabText,
-              isActive("/protected") && styles.activeTabText,
-            ]}
+            style={[styles.tabText, isActive("/auth") && styles.activeTabText]}
           >
             Sign In
           </Text>
