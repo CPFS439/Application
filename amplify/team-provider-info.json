@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-cfsmarketplace-dev-7edc4-authRole",
+      "UnauthRoleArn": "arn:aws:iam::412381755599:role/amplify-cfsmarketplace-dev-7edc4-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::412381755599:role/amplify-cfsmarketplace-dev-7edc4-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-cfsmarketplace-dev-7edc4-deployment",
+      "UnauthRoleName": "amplify-cfsmarketplace-dev-7edc4-unauthRole",
+      "StackName": "amplify-cfsmarketplace-dev-7edc4",
+      "StackId": "arn:aws:cloudformation:us-east-1:412381755599:stack/amplify-cfsmarketplace-dev-7edc4/b9f99250-fe7e-11ef-93f3-124bc0ecc0f5",
+      "AmplifyAppId": "d27lvbnj137098"
+    },
+    "categories": {
+      "auth": {
+        "cfsmarketplaceb7ca58e0": {}
+      }
+    }
+  }
+}
