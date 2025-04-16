@@ -1,24 +1,31 @@
+import React from "react";
 import { Stack } from "expo-router";
-import { Amplify } from "aws-amplify";
-import awsExports from "../src/aws-exports";
+import { View, StyleSheet, Platform, StatusBar } from "react-native";
+import TopNavBar from "../components/TopNavBar";
 import CustomNavBar from "../components/CustomNavBar";
-import { View } from "react-native";
-
-// Configure Amplify
-Amplify.configure(awsExports);
 
 export default function RootLayout() {
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
+      <TopNavBar />
       <Stack
         screenOptions={{
-          headerShown: false, // Hide the default header
+          headerShown: false,
+          contentStyle: styles.stackContent,
         }}
-      >
-        <Stack.Screen name="index" />
-        <Stack.Screen name="protected" />
-      </Stack>
+      />
       <CustomNavBar />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+  },
+  stackContent: {
+    backgroundColor: "#f5f5f5",
+    // No additional padding or margin here
+  },
+});

@@ -1,24 +1,17 @@
+import React, { useEffect, useState } from "react";
 import { Text, View } from "react-native";
-import { withAuthenticator } from "@aws-amplify/ui-react-native";
-import { useEffect, useState } from "react";
 import { getCurrentUser } from "aws-amplify/auth";
-import { globalStyles } from "../../styles/globalStyles"; // Import global styles
+import { globalStyles } from "../../styles/globalStyles";
 
-function ProfileScreen({ user: authUser }) {
+export default function ProfileScreen() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchUser() {
       try {
-        // If user is passed from withAuthenticator, use it
-        if (authUser) {
-          setUser(authUser);
-        } else {
-          // Otherwise fetch the current user manually
-          const userData = await getCurrentUser();
-          setUser(userData);
-        }
+        const userData = await getCurrentUser();
+        setUser(userData);
       } catch (error) {
         console.error("Error fetching user:", error);
       } finally {
@@ -27,7 +20,7 @@ function ProfileScreen({ user: authUser }) {
     }
 
     fetchUser();
-  }, [authUser]);
+  }, []);
 
   if (loading) {
     return (
@@ -52,12 +45,8 @@ function ProfileScreen({ user: authUser }) {
       <Text style={globalStyles.title}>User Profile</Text>
       <Text style={globalStyles.content}>
         Email: {user.signInDetails?.loginId || "N/A"}
-        <br />
-        this is a PROTECTED ROUTE
       </Text>
-      {/* Display more user information here */}
+      <Text style={globalStyles.content}>This is a PROTECTED ROUTE</Text>
     </View>
   );
 }
-
-export default withAuthenticator(ProfileScreen);
