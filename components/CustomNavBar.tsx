@@ -7,7 +7,6 @@ import {
   Dimensions,
 } from "react-native";
 import { useRouter, usePathname } from "expo-router";
-import { Svg, Circle } from "react-native-svg";
 import { getCurrentUser, signOut } from "aws-amplify/auth";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -52,7 +51,13 @@ const CustomNavBar: React.FC = () => {
   };
 
   const navigateTo = (
-    path: "/" | "/protected/charity" | "/protected/profile"
+    path:
+      | "/"
+      | "/protected/charity"
+      | "/protected/retail"
+      | "/protected/profile"
+      | "/menu"
+      | "/protected"
   ) => {
     router.push(path);
   };
@@ -66,7 +71,13 @@ const CustomNavBar: React.FC = () => {
 
     // Normal active tab logic for authenticated users
     if (path === "/" && pathname === "/") return true;
-    if (path !== "/" && path !== "/protected" && pathname.includes(path))
+    if (path === "/menu" && pathname === "/menu") return true;
+    if (
+      path !== "/" &&
+      path !== "/protected" &&
+      path !== "/menu" &&
+      pathname.includes(path)
+    )
       return true;
     return false;
   };
@@ -88,9 +99,13 @@ const CustomNavBar: React.FC = () => {
         </Text>
       </TouchableOpacity>
 
-      {/* Charities Tab */}
+      {/* Charity Services Tab */}
       <TouchableOpacity
-        style={[styles.tab, isActive("/protected/charity") && styles.activeTab]}
+        style={[
+          styles.tab,
+          styles.serviceTab,
+          isActive("/protected/charity") && styles.activeTab,
+        ]}
         onPress={() => navigateTo("/protected/charity")}
       >
         <Ionicons
@@ -101,64 +116,71 @@ const CustomNavBar: React.FC = () => {
         <Text
           style={[
             styles.tabText,
+            styles.serviceTabText,
             isActive("/protected/charity") && styles.activeTabText,
           ]}
         >
-          Charities
+          Charity Services
         </Text>
       </TouchableOpacity>
 
-      {/* Logo in the middle */}
+      {/* Retail Services Tab */}
       <TouchableOpacity
-        style={styles.logoTab}
+        style={[
+          styles.tab,
+          styles.serviceTab,
+          isActive("/protected/retail") && styles.activeTab,
+        ]}
         onPress={() => {
           if (isAuthenticated) {
-            navigateTo("/protected/profile");
-          } else {
-            navigateTo("/");
-          }
-        }}
-      >
-        <View style={styles.logoContainer}>
-          <Svg height="40" width="40" viewBox="0 0 100 100">
-            <Circle cx="50" cy="50" r="45" fill="#3498db" />
-          </Svg>
-        </View>
-      </TouchableOpacity>
-
-      {/* Profile Tab */}
-      <TouchableOpacity
-        style={[styles.tab, isActive("/protected/profile") && styles.activeTab]}
-        onPress={() => {
-          if (isAuthenticated) {
-            navigateTo("/protected/profile");
+            navigateTo("/protected/retail");
           } else {
             navigateTo("/protected");
           }
         }}
       >
         <Ionicons
-          name="person"
+          name="cart"
           size={24}
-          color={isActive("/protected/profile") ? "#3498db" : "#13345c"}
+          color={isActive("/protected/retail") ? "#3498db" : "#13345c"}
         />
         <Text
           style={[
             styles.tabText,
-            isActive("/protected/profile") && styles.activeTabText,
+            styles.serviceTabText,
+            isActive("/protected/retail") && styles.activeTabText,
           ]}
         >
-          Profile
+          Retail Services
         </Text>
       </TouchableOpacity>
 
-      {/* Sign In/Out Tab */}
+      {/* Conditional Tab: Profile when authenticated, Sign In when not */}
       {isAuthenticated ? (
-        <TouchableOpacity style={styles.tab} onPress={handleSignOut}>
-          <Ionicons name="log-out" size={24} color="#d23631" />
-          <Text style={[styles.tabText, { color: "#d23631" }]}>Sign Out</Text>
+        // Profile Tab (when authenticated)
+        <TouchableOpacity
+          style={[
+            styles.tab,
+            isActive("/protected/profile") && styles.activeTab,
+          ]}
+          onPress={() => navigateTo("/protected/profile")}
+        >
+          <Ionicons
+            name="person"
+            size={24}
+            color={isActive("/protected/profile") ? "#3498db" : "#13345c"}
+          />
+          <Text
+            style={[
+              styles.tabText,
+              isActive("/protected/profile") && styles.activeTabText,
+            ]}
+          >
+            Profile
+          </Text>
         </TouchableOpacity>
       ) : (
+        // Sign In Tab (when not authenticated)
         <TouchableOpacity
           style={[styles.tab, isActive("/protected") && styles.activeTab]}
           onPress={() => navigateTo("/protected")}
@@ -178,6 +200,23 @@ const CustomNavBar: React.FC = () => {
           </Text>
         </TouchableOpacity>
       )}
+
+      {/* Menu Tab */}
+      <TouchableOpacity
+        style={[styles.tab, isActive("/menu") && styles.activeTab]}
+        onPress={() => navigateTo("/menu")}
+      >
+        <Ionicons
+          name="menu"
+          size={24}
+          color={isActive("/menu") ? "#3498db" : "#13345c"}
+        />
+        <Text
+          style={[styles.tabText, isActive("/menu") && styles.activeTabText]}
+        >
+          Menu
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -207,6 +246,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 5,
   },
+  serviceTab: {
+    flex: 1.2, // Give slightly more space to service tabs
+  },
   activeTab: {
     borderTopWidth: 3,
     borderTopColor: "#3498db",
@@ -215,26 +257,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#13345c",
     marginTop: 2,
+    textAlign: "center",
+  },
+  serviceTabText: {
+    fontSize: 11, // Slightly smaller font to fit the longer text
+    lineHeight: 12,
   },
   activeTabText: {
     color: "#3498db",
     fontWeight: "bold",
-  },
-  logoTab: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  logoContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 30,
-    padding: 5,
-    marginBottom: 20,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
   },
 });
 
