@@ -39,13 +39,13 @@ export default function RetailLayout() {
       <Stack.Screen
         name="index"
         options={{
-          headerShown: true,
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="[id]"
         options={{
-          headerShown: true,
+          headerShown: false,
         }}
       />
     </Stack>

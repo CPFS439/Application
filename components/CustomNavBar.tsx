@@ -150,7 +150,7 @@ const CustomNavBar: React.FC = () => {
             isActive("/protected/retail") && styles.activeTabText,
           ]}
         >
-          Retail Services
+          CPFS Services
         </Text>
       </TouchableOpacity>
 
