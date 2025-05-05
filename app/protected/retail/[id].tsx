@@ -3,117 +3,101 @@ import {
   View,
   Text,
   StyleSheet,
-  Image,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Linking,
 } from "react-native";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import CustomNavBar from "../../../components/CustomNavBar";
 
-// Mock data for retail services (same as in index.tsx)
-const retailServices = [
+// Mock data for retail stores (same structure as in index.tsx)
+const retailStores = [
   {
     id: "1",
-    name: "Grocery Delivery",
-    description: "Get groceries delivered to your doorstep",
-    image: "https://via.placeholder.com/150",
-    category: "Food & Groceries",
-    longDescription:
-      "Our grocery delivery service brings fresh produce, pantry staples, and household essentials right to your door. Shop from a wide selection of items and enjoy convenient delivery options that fit your schedule.",
-    contact: {
-      phone: "555-123-4567",
-      email: "groceries@example.com",
-      website: "www.grocerydelivery.example.com",
-    },
+    name: "Fresh Market",
+    category: "Grocery Shopping",
+    description: "Organic and fresh produce with military discount",
+    location: "Multiple locations nationwide",
+    discount: "10% off for military personnel",
   },
   {
     id: "2",
-    name: "Clothing Store",
-    description: "Shop the latest fashion trends",
-    image: "https://via.placeholder.com/150",
-    category: "Fashion",
-    longDescription:
-      "Discover the latest fashion trends for all seasons. Our clothing store offers a wide range of apparel for men, women, and children, from casual wear to formal attire. We also carry accessories to complete your look.",
-    contact: {
-      phone: "555-234-5678",
-      email: "fashion@example.com",
-      website: "www.fashionstore.example.com",
-    },
+    name: "Veteran Apparel",
+    category: "Clothing",
+    description: "Quality clothing with exclusive military designs",
+    location: "Online store with free shipping",
+    discount: "15% off for veterans",
   },
   {
     id: "3",
-    name: "Electronics Shop",
-    description: "Find the latest tech gadgets",
-    image: "https://via.placeholder.com/150",
+    name: "Tech Warriors",
     category: "Electronics",
-    longDescription:
-      "Stay up-to-date with the latest technology at our electronics shop. We offer smartphones, computers, home entertainment systems, and smart home devices. Our knowledgeable staff can help you find the perfect tech solution.",
-    contact: {
-      phone: "555-345-6789",
-      email: "tech@example.com",
-      website: "www.electronicshop.example.com",
-    },
+    description: "Latest electronics with special military pricing",
+    location: "San Diego, CA and online",
+    discount: "Military pricing on select items",
   },
   {
     id: "4",
-    name: "Home Goods",
-    description: "Everything you need for your home",
-    image: "https://via.placeholder.com/150",
-    category: "Home & Garden",
-    longDescription:
-      "Transform your living space with our selection of home goods. From furniture and decor to kitchen essentials and bedding, we have everything you need to make your house a home. We also offer seasonal items to keep your space fresh.",
-    contact: {
-      phone: "555-456-7890",
-      email: "home@example.com",
-      website: "www.homegoods.example.com",
-    },
+    name: "Home Base Furnishings",
+    category: "Home Goods",
+    description: "Quality furniture for military families",
+    location: "Near major military bases",
+    discount: "Free delivery for active duty",
   },
   {
     id: "5",
-    name: "Pharmacy Services",
-    description: "Get medications and health products",
-    image: "https://via.placeholder.com/150",
-    category: "Health",
-    longDescription:
-      "Our pharmacy provides prescription medications, over-the-counter remedies, and health-related products. Our pharmacists are available to answer your questions and provide guidance on medications and health concerns.",
-    contact: {
-      phone: "555-567-8901",
-      email: "health@example.com",
-      website: "www.pharmacy.example.com",
-    },
+    name: "Service Beauty Supply",
+    category: "Beauty Products",
+    description: "Premium beauty products for all",
+    location: "Online with nationwide shipping",
+    discount: "Military family discount available",
   },
   {
     id: "6",
-    name: "Book Store",
-    description: "Discover your next favorite read",
-    image: "https://via.placeholder.com/150",
+    name: "Veteran Bookstore",
     category: "Books & Media",
-    longDescription:
-      "Browse our extensive collection of books spanning all genres. From bestsellers and classics to niche topics and local authors, we have something for every reader. We also host regular book clubs and author events.",
-    contact: {
-      phone: "555-678-9012",
-      email: "books@example.com",
-      website: "www.bookstore.example.com",
-    },
+    description: "Books, movies and more with military focus",
+    location: "Washington DC and online",
+    discount: "Buy one, get one 50% off for veterans",
+  },
+  {
+    id: "7",
+    name: "Military Grocery Delivery",
+    category: "Grocery Shopping",
+    description: "Grocery delivery service near military bases",
+    location: "Available near all major bases",
+    discount: "Free delivery for orders over $50",
+  },
+  {
+    id: "8",
+    name: "Tactical Electronics",
+    category: "Electronics",
+    description: "Rugged and reliable electronics",
+    location: "Online store with global shipping",
+    discount: "20% military discount on all items",
   },
 ];
 
-const RetailServiceDetailScreen = () => {
+const RetailStoreDetailScreen = () => {
   const { id } = useLocalSearchParams();
   const [loading, setLoading] = useState(true);
-  const [service, setService] = useState<(typeof retailServices)[0] | null>(
-    null
-  );
+  const [store, setStore] = useState(null);
+  const [error, setError] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
     // Simulate API call
     setLoading(true);
     setTimeout(() => {
-      const foundService = retailServices.find((s) => s.id === id);
-      setService(foundService || null);
+      const foundStore = retailStores.find((s) => s.id === id);
+      if (foundStore) {
+        setStore(foundStore);
+        setError(null);
+      } else {
+        setError("Store not found");
+      }
       setLoading(false);
     }, 500);
   }, [id]);
@@ -122,17 +106,18 @@ const RetailServiceDetailScreen = () => {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#3498db" />
+        <Text style={styles.loadingText}>Loading store information...</Text>
       </View>
     );
   }
 
-  if (!service) {
+  if (error || !store) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Service not found</Text>
+        <Text style={styles.errorText}>{error || "Store not found"}</Text>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={() => router.push(`/protected/retail/${id}`)}
         >
           <Text style={styles.backButtonText}>Go Back</Text>
         </TouchableOpacity>
@@ -142,53 +127,50 @@ const RetailServiceDetailScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen
-        options={{
-          title: service.name,
-          headerStyle: {
-            backgroundColor: "#3498db",
-          },
-          headerTintColor: "#fff",
-          headerTitleStyle: {
-            fontWeight: "bold",
-          },
-        }}
-      />
-
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.contentContainer}
       >
-        <Image source={{ uri: service.image }} style={styles.image} />
+        <Text style={styles.title}>{store.name}</Text>
+        <Text style={styles.subtitle}>{store.category}</Text>
 
-        <View style={styles.categoryBadge}>
-          <Text style={styles.categoryText}>{service.category}</Text>
+        <View style={styles.infoSection}>
+          <Text style={styles.sectionTitle}>About</Text>
+          <Text style={styles.description}>{store.description}</Text>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.title}>{service.name}</Text>
-          <Text style={styles.description}>{service.longDescription}</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Contact Information</Text>
-          <View style={styles.contactItem}>
-            <Ionicons name="call" size={20} color="#3498db" />
-            <Text style={styles.contactText}>{service.contact.phone}</Text>
+        <View style={styles.infoSection}>
+          <Text style={styles.sectionTitle}>Details</Text>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Location:</Text>
+            <Text style={styles.detailValue}>{store.location}</Text>
           </View>
-          <View style={styles.contactItem}>
-            <Ionicons name="mail" size={20} color="#3498db" />
-            <Text style={styles.contactText}>{service.contact.email}</Text>
-          </View>
-          <View style={styles.contactItem}>
-            <Ionicons name="globe" size={20} color="#3498db" />
-            <Text style={styles.contactText}>{service.contact.website}</Text>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Discount:</Text>
+            <Text style={styles.detailValue}>{store.discount}</Text>
           </View>
         </View>
 
-        <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.actionButtonText}>Contact This Service</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => {
+              // In a real app, this would navigate to a contact form or website
+              alert("This would open the store's website or contact form");
+            }}
+          >
+            <Text style={styles.actionButtonText}>Contact This Store</Text>
+          </TouchableOpacity>
+
+          <View style={styles.buttonSpacer} />
+
+          <TouchableOpacity
+            style={[styles.actionButton, styles.secondaryButton]}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.secondaryButtonText}>Back to Stores</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
 
       <CustomNavBar />
@@ -201,21 +183,37 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f5f5",
   },
+  scrollView: {
+    flex: 1,
+  },
+  contentContainer: {
+    padding: 16,
+    paddingBottom: 80, // Space for navbar
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#f5f5f5",
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#666",
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#f5f5f5",
     padding: 20,
   },
   errorText: {
-    fontSize: 18,
-    color: "#d23631",
+    fontSize: 16,
+    color: "#e74c3c",
     marginBottom: 20,
+    textAlign: "center",
   },
   backButton: {
     backgroundColor: "#3498db",
@@ -227,34 +225,21 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
   },
-  scrollView: {
-    flex: 1,
-  },
-  contentContainer: {
-    paddingBottom: 80, // Space for navbar
-  },
-  image: {
-    width: "100%",
-    height: 200,
-    resizeMode: "cover",
-  },
-  categoryBadge: {
-    position: "absolute",
-    top: 20,
-    right: 20,
-    backgroundColor: "#3498db",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  categoryText: {
-    color: "#fff",
+  title: {
+    fontSize: 24,
     fontWeight: "bold",
-    fontSize: 12,
+    color: "#13345c",
+    marginBottom: 8,
   },
-  section: {
+  subtitle: {
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 20,
+  },
+  infoSection: {
+    width: "100%",
+    marginBottom: 20,
     backgroundColor: "#fff",
-    margin: 16,
     padding: 16,
     borderRadius: 8,
     shadowColor: "#000",
@@ -263,36 +248,46 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#13345c",
-    marginBottom: 12,
-  },
-  description: {
-    fontSize: 16,
-    color: "#555",
-    lineHeight: 24,
-  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
+    marginBottom: 10,
     color: "#13345c",
+  },
+  description: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: "#555",
+    marginBottom: 8,
+  },
+  detailRow: {
+    flexDirection: "row",
     marginBottom: 12,
   },
-  contactItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  contactText: {
+  detailLabel: {
     fontSize: 16,
+    fontWeight: "bold",
+    width: 120,
+    color: "#13345c",
+  },
+  detailValue: {
+    fontSize: 16,
+    flex: 1,
     color: "#555",
-    marginLeft: 10,
+  },
+  link: {
+    color: "#3498db",
+    textDecorationLine: "underline",
+  },
+  buttonContainer: {
+    marginTop: 10,
+    marginBottom: 40,
+  },
+  buttonSpacer: {
+    height: 12,
   },
   actionButton: {
     backgroundColor: "#3498db",
-    margin: 16,
     padding: 16,
     borderRadius: 8,
     alignItems: "center",
@@ -302,6 +297,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+  secondaryButton: {
+    backgroundColor: "#f0f0f0",
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+  secondaryButtonText: {
+    color: "#666",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 });
 
-export default RetailServiceDetailScreen;
+export default RetailStoreDetailScreen;

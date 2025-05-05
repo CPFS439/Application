@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -42,26 +43,57 @@ const MenuScreen = () => {
     };
   }, []);
 
+  // Function to perform sign out
+  const performSignOut = async () => {
+    try {
+      console.log("Attempting to sign out...");
+      await signOut();
+      console.log("Sign out successful");
+      setIsAuthenticated(false);
+      router.replace("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+
+      // Handle error alert based on platform
+      if (Platform.OS === "web") {
+        window.alert(
+          `Failed to sign out: ${
+            error.message || "Unknown error"
+          }. Please try again.`
+        );
+      } else {
+        Alert.alert(
+          "Error",
+          `Failed to sign out: ${
+            error.message || "Unknown error"
+          }. Please try again.`
+        );
+      }
+    }
+  };
+
   const handleSignOut = async () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Sign Out",
-        onPress: async () => {
-          try {
-            await signOut();
-            setIsAuthenticated(false);
-            router.replace("/");
-          } catch (error) {
-            console.error("Error signing out:", error);
-            Alert.alert("Error", "Failed to sign out. Please try again.");
-          }
+    console.log("Sign out button pressed");
+
+    // Use different alert methods based on platform
+    if (Platform.OS === "web") {
+      // For web, use window.confirm
+      if (window.confirm("Are you sure you want to sign out?")) {
+        performSignOut();
+      }
+    } else {
+      // For mobile, use React Native Alert
+      Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+        {
+          text: "Cancel",
+          style: "cancel",
         },
-      },
-    ]);
+        {
+          text: "Sign Out",
+          onPress: performSignOut,
+        },
+      ]);
+    }
   };
 
   // Common menu items for all users

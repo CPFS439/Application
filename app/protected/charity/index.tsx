@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,14 +6,40 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { generateClient } from "aws-amplify/api";
+
+const client = generateClient();
+
+// Define a custom query that excludes createdAt and updatedAt
+const listCharitiesQuery = /* GraphQL */ `
+  query ListCharities {
+    listCharities {
+      items {
+        name
+        mission
+        email
+        phone
+        website
+        program
+        programDescription
+        processLink
+        product
+        category
+      }
+    }
+  }
+`;
 
 export default function CharityServicesScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [charities, setCharities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Updated charity services data
   const charityServices = [
@@ -55,73 +81,45 @@ export default function CharityServicesScreen() {
     },
   ];
 
-  // Sample charities data
-  const charities = [
-    {
-      id: "1",
-      name: "Veterans Support Foundation",
-      category: "Financial",
-      description: "Provides financial assistance to veterans in need",
-      location: "Washington, DC",
-    },
-    {
-      id: "2",
-      name: "Military Clothing Relief",
-      category: "Clothing",
-      description: "Donates clothing to military families",
-      location: "San Diego, CA",
-    },
-    {
-      id: "3",
-      name: "Veterans Education Fund",
-      category: "Education",
-      description: "Scholarships for veterans pursuing higher education",
-      location: "Boston, MA",
-    },
-    {
-      id: "4",
-      name: "Warrior Wellness Center",
-      category: "Counseling/Personal Services",
-      description: "Mental health services for veterans and their families",
-      location: "Austin, TX",
-    },
-    {
-      id: "5",
-      name: "Tech for Troops",
-      category: "Information Technology",
-      description: "Provides computers and IT training to veterans",
-      location: "Richmond, VA",
-    },
-    {
-      id: "6",
-      name: "Healthy Heroes",
-      category: "Health Care/Food",
-      description: "Free health screenings and food assistance",
-      location: "Chicago, IL",
-    },
-    {
-      id: "7",
-      name: "Veterans Financial Coalition",
-      category: "Financial",
-      description: "Financial literacy and emergency assistance",
-      location: "New York, NY",
-    },
-    {
-      id: "8",
-      name: "Operation Educate",
-      category: "Education",
-      description: "Educational resources and tutoring for veterans",
-      location: "Atlanta, GA",
-    },
-  ];
+  // Fetch charities from API
+  useEffect(() => {
+    async function fetchCharities() {
+      try {
+        setLoading(true);
+        // Query the GraphQL API using the custom query
+        const response = await client.graphql({ query: listCharitiesQuery });
+
+        // Extract the charities from the response
+        const charitiesData = response.data.listCharities.items;
+
+        // Console log the results
+        console.log(
+          "Charities from API:",
+          JSON.stringify(charitiesData, null, 2)
+        );
+        console.log("Number of charities fetched:", charitiesData.length);
+
+        // Set the charities state
+        setCharities(charitiesData);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching charities:", err);
+        setError("Failed to load charities. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchCharities();
+  }, []);
 
   // Filter charities based on search query
   const filteredCharities = charities.filter(
     (charity) =>
-      charity.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      charity.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      charity.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      charity.location.toLowerCase().includes(searchQuery.toLowerCase())
+      charity.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      charity.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      charity.mission?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      charity.program?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -134,7 +132,6 @@ export default function CharityServicesScreen() {
             style={styles.serviceCard}
             onPress={() => {
               setSearchQuery(service.name);
-              // router.push(`/protected/charity/${service.id}`);
             }}
           >
             <View style={styles.iconContainer}>
@@ -169,31 +166,49 @@ export default function CharityServicesScreen() {
       {/* Charities list */}
       <View style={styles.listContainer}>
         <Text style={styles.listTitle}>Available Charities</Text>
-        {filteredCharities.length === 0 ? (
+
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#3498db" />
+            <Text style={styles.loadingText}>Loading charities...</Text>
+          </View>
+        ) : error ? (
+          <Text style={styles.errorText}>{error}</Text>
+        ) : filteredCharities.length === 0 ? (
           <Text style={styles.noResults}>
             No charities found matching your search.
           </Text>
         ) : (
-          filteredCharities.map((charity) => (
+          filteredCharities.map((charity, index) => (
             <TouchableOpacity
-              key={charity.id}
+              key={charity.name || `charity-${index}`}
               style={styles.charityCard}
               onPress={() =>
-                router.push(`/protected/charity/details/${charity.id}`)
+                router.push(
+                  `/protected/charity/details/${encodeURIComponent(
+                    charity.name
+                  )}`
+                )
               }
             >
               <View style={styles.charityHeader}>
                 <Text style={styles.charityName}>{charity.name}</Text>
                 <View style={styles.categoryBadge}>
-                  <Text style={styles.categoryText}>{charity.category}</Text>
+                  <Text style={styles.categoryText}>
+                    {charity.category || "General"}
+                  </Text>
                 </View>
               </View>
               <Text style={styles.charityDescription}>
-                {charity.description}
+                {charity.mission ||
+                  charity.programDescription ||
+                  "No description available."}
               </Text>
               <View style={styles.charityFooter}>
-                <Ionicons name="location" size={16} color="#666" />
-                <Text style={styles.charityLocation}>{charity.location}</Text>
+                <Ionicons name="call" size={16} color="#666" />
+                <Text style={styles.charityLocation}>
+                  {charity.phone || "No phone available"}
+                </Text>
               </View>
             </TouchableOpacity>
           ))
@@ -273,6 +288,21 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#13345c",
     marginBottom: 12,
+  },
+  loadingContainer: {
+    padding: 20,
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 10,
+    color: "#666",
+    fontSize: 16,
+  },
+  errorText: {
+    color: "#e74c3c",
+    textAlign: "center",
+    padding: 20,
+    fontSize: 16,
   },
   noResults: {
     textAlign: "center",

@@ -57,14 +57,15 @@ const CustomNavBar: React.FC = () => {
       | "/protected/retail"
       | "/protected/profile"
       | "/menu"
+      | "/auth"
   ) => {
     router.push(path);
   };
 
   // Determine if a tab is active
   const isActive = (path: string) => {
-    // If we're authenticating, ONLY the sign-in tab should be active
-    if (isAuthenticating) {
+    // If we're authenticating or on the auth page, ONLY the sign-in tab should be active
+    if (isAuthenticating || pathname === "/auth") {
       return path === "/auth";
     }
 
@@ -105,7 +106,13 @@ const CustomNavBar: React.FC = () => {
           styles.serviceTab,
           isActive("/protected/charity") && styles.activeTab,
         ]}
-        onPress={() => navigateTo("/protected/charity")}
+        onPress={() => {
+          if (isAuthenticated) {
+            navigateTo("/protected/charity");
+          } else {
+            navigateTo("/auth"); // Redirect to auth page if not authenticated
+          }
+        }}
       >
         <Ionicons
           name="heart"

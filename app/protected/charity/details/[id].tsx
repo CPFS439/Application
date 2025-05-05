@@ -2,141 +2,207 @@ import { useEffect, useState } from "react";
 import {
   View,
   Text,
-  Image,
   StyleSheet,
   ScrollView,
   Button,
+  ActivityIndicator,
+  Linking,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { globalStyles } from "../../../../styles/globalStyles";
 import { withAuthenticator } from "@aws-amplify/ui-react-native";
+import { generateClient } from "aws-amplify/api";
+
+// Define a query to get charity by name
+const getCharityByNameQuery = /* GraphQL */ `
+  query ListCharities($name: String!) {
+    listCharities(filter: { name: { eq: $name } }) {
+      items {
+        name
+        mission
+        email
+        phone
+        website
+        program
+        programDescription
+        processLink
+        product
+        category
+      }
+    }
+  }
+`;
+
+const client = generateClient();
 
 function CharityDetailScreen() {
-  const { id } = useLocalSearchParams();
+  const params = useLocalSearchParams();
   const router = useRouter();
   const [charity, setCharity] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Sample charity data - in a real app, you would fetch this from an API
-  const charities = {
-    "1": {
-      id: "1",
-      name: "Wounded Warrior Project",
-      type: "Veteran Support",
-      image: "https://via.placeholder.com/300",
-      description:
-        "Providing programs and services to severely injured service members during the time between active duty and transition to civilian life.",
-      longDescription:
-        "The Wounded Warrior Project (WWP) is a charity and veterans service organization that offers a variety of programs, services and events for wounded veterans of the military actions following September 11, 2001. It operates as a nonprofit organization with a mission to 'honor and empower Wounded Warriors' of the United States Armed Forces, as well as provide services and programs for the family members of its registered 'alumni,' as its registered veterans are called.",
-      website: "woundedwarriorproject.org",
-      founded: "2003",
-      headquarters: "Jacksonville, Florida",
-    },
-    "2": {
-      id: "2",
-      name: "Disabled American Veterans",
-      type: "Advocacy & Benefits",
-      image: "https://via.placeholder.com/300",
-      description:
-        "Providing free, professional assistance to veterans of all generations in obtaining VA and other government benefits.",
-      longDescription:
-        "DAV (Disabled American Veterans) is an organization created by Congress for disabled veterans of the United States Armed Forces that helps them and their families through various means. It currently has over 1 million members, and was founded to help disabled veterans returning from World War I obtain their benefits.",
-      website: "dav.org",
-      founded: "1920",
-      headquarters: "Cold Spring, Kentucky",
-    },
-    "3": {
-      id: "3",
-      name: "Fisher House Foundation",
-      type: "Family Support",
-      image: "https://via.placeholder.com/300",
-      description:
-        "Providing comfort homes where military & veterans families can stay at no cost while a loved one is receiving treatment.",
-      longDescription:
-        "Fisher House Foundation is best known for its network of comfort homes where military and veterans' families can stay at no cost while a loved one is receiving treatment. These homes are located at major military and VA medical centers nationwide, close to the medical center or hospital they serve.",
-      website: "fisherhouse.org",
-      founded: "1990",
-      headquarters: "Rockville, Maryland",
-    },
-    "4": {
-      id: "4",
-      name: "Gary Sinise Foundation",
-      type: "Multiple Programs",
-      image: "https://via.placeholder.com/300",
-      description:
-        "Serving our nation by honoring our defenders, veterans, first responders, their families, and those in need.",
-      longDescription:
-        "The Gary Sinise Foundation was established under the philanthropic direction of actor Gary Sinise, who has been an advocate of our nation's defenders for decades. The Foundation's mission is to serve our nation by honoring our defenders, veterans, first responders, their families, and those in need.",
-      website: "garysinisefoundation.org",
-      founded: "2011",
-      headquarters: "Los Angeles, California",
-    },
-  };
+  // Use the ID parameter as the charity name
+  const charityName = decodeURIComponent(params.id?.toString() || "");
 
   useEffect(() => {
-    // Simulate fetching charity data
-    if (id && charities[id]) {
-      setCharity(charities[id]);
+    async function fetchCharityDetails() {
+      if (!charityName) {
+        setLoading(false);
+        setError("No charity name provided");
+        return;
+      }
+
+      try {
+        setLoading(true);
+        console.log("Fetching charity with name:", charityName);
+
+        // Query the GraphQL API for the charity by name
+        const response = await client.graphql({
+          query: getCharityByNameQuery,
+          variables: { name: charityName },
+        });
+
+        // Extract the charity from the response
+        const charities = response.data.listCharities.items;
+        console.log(
+          "Charity query response:",
+          JSON.stringify(charities, null, 2)
+        );
+
+        if (charities && charities.length > 0) {
+          setCharity(charities[0]);
+          setError(null);
+        } else {
+          setError("Charity not found");
+        }
+      } catch (err) {
+        console.error("Error fetching charity details:", err);
+        setError(`Failed to load charity details: ${err.message}`);
+      } finally {
+        setLoading(false);
+      }
     }
-    setLoading(false);
-  }, [id]);
+
+    fetchCharityDetails();
+  }, [charityName]);
+
+  const handleWebsitePress = () => {
+    if (charity?.website) {
+      let url = charity.website;
+      // Add https:// if not present
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        url = "https://" + url;
+      }
+      Linking.openURL(url);
+    }
+  };
+
+  const handleProcessLinkPress = () => {
+    if (charity?.processLink) {
+      let url = charity.processLink;
+      // Add https:// if not present
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        url = "https://" + url;
+      }
+      Linking.openURL(url);
+    }
+  };
 
   if (loading) {
     return (
-      <View style={globalStyles.container}>
-        <Text style={globalStyles.content}>Loading charity information...</Text>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#3498db" />
+        <Text style={styles.loadingText}>Loading charity information...</Text>
       </View>
     );
   }
 
-  if (!charity) {
+  if (error || !charity) {
     return (
-      <View style={globalStyles.container}>
-        <Text style={globalStyles.content}>Charity not found</Text>
-        <Button title="Go Back" onPress={() => router.back()} />
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{error || "Charity not found"}</Text>
+        <Button title="Go Back" onPress={() => router.back()} color="#3498db" />
       </View>
     );
   }
 
   return (
     <ScrollView style={styles.scrollContainer}>
-      <View style={globalStyles.container}>
-        <Image source={{ uri: charity.image }} style={styles.charityImage} />
-
-        <Text style={globalStyles.title}>{charity.name}</Text>
-        <Text style={globalStyles.subtitle}>{charity.type}</Text>
+      <View style={styles.container}>
+        <Text style={styles.title}>{charity.name}</Text>
+        <Text style={styles.subtitle}>{charity.category || "General"}</Text>
 
         <View style={styles.infoSection}>
           <Text style={styles.sectionTitle}>About</Text>
-          <Text style={styles.description}>{charity.longDescription}</Text>
+          <Text style={styles.description}>
+            {charity.mission ||
+              charity.programDescription ||
+              "No description available."}
+          </Text>
+        </View>
+
+        <View style={styles.infoSection}>
+          <Text style={styles.sectionTitle}>Program</Text>
+          <Text style={styles.description}>
+            {charity.program || "No program information available."}
+          </Text>
+          <Text style={styles.description}>
+            {charity.programDescription || ""}
+          </Text>
         </View>
 
         <View style={styles.infoSection}>
           <Text style={styles.sectionTitle}>Details</Text>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Website:</Text>
-            <Text style={styles.detailValue}>{charity.website}</Text>
+            <Text
+              style={[styles.detailValue, charity.website ? styles.link : null]}
+              onPress={charity.website ? handleWebsitePress : null}
+            >
+              {charity.website || "N/A"}
+            </Text>
           </View>
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Founded:</Text>
-            <Text style={styles.detailValue}>{charity.founded}</Text>
+            <Text style={styles.detailLabel}>Email:</Text>
+            <Text style={styles.detailValue}>{charity.email || "N/A"}</Text>
           </View>
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Headquarters:</Text>
-            <Text style={styles.detailValue}>{charity.headquarters}</Text>
+            <Text style={styles.detailLabel}>Phone:</Text>
+            <Text style={styles.detailValue}>{charity.phone || "N/A"}</Text>
           </View>
+          {charity.processLink && (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Process Link:</Text>
+              <Text
+                style={[styles.detailValue, styles.link]}
+                onPress={handleProcessLinkPress}
+              >
+                View Process
+              </Text>
+            </View>
+          )}
         </View>
 
-        <Button
-          title="Support This Charity"
-          color="#3498db"
-          onPress={() => {}}
-        />
-        <Button
-          title="Back to Charities"
-          onPress={() => router.back()}
-          color="#666"
-        />
+        <View style={styles.buttonContainer}>
+          <Button
+            title="Support This Charity"
+            color="#3498db"
+            onPress={() => {
+              if (charity.website) {
+                handleWebsitePress();
+              } else if (charity.email) {
+                Linking.openURL(`mailto:${charity.email}`);
+              }
+            }}
+          />
+          <View style={styles.buttonSpacer} />
+          <Button
+            title="Back to Charities"
+            onPress={() => router.back()}
+            color="#666"
+          />
+        </View>
       </View>
     </ScrollView>
   );
@@ -145,47 +211,98 @@ function CharityDetailScreen() {
 const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
-    backgroundColor: "#13345c",
+    backgroundColor: "#f5f5f5", // Changed to match app's light background
   },
-  charityImage: {
-    width: "100%",
-    height: 200,
-    borderRadius: 10,
+  container: {
+    flex: 1,
+    padding: 16,
+    paddingTop: 20, // Reduced top padding to remove extra space
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#666",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: "#e74c3c",
     marginBottom: 20,
-    marginTop: 40,
+    textAlign: "center",
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#13345c",
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 20,
   },
   infoSection: {
     width: "100%",
-    marginBottom: 25,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    padding: 15,
-    borderRadius: 10,
+    marginBottom: 20,
+    backgroundColor: "#fff", // Changed to white background with border
+    padding: 16,
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
-    color: "#fff",
+    color: "#13345c", // Changed to match app's blue color
   },
   description: {
     fontSize: 16,
     lineHeight: 24,
-    color: "#fff",
+    color: "#555", // Changed to darker text for better readability
+    marginBottom: 8,
   },
   detailRow: {
     flexDirection: "row",
-    marginBottom: 8,
+    marginBottom: 12,
   },
   detailLabel: {
     fontSize: 16,
     fontWeight: "bold",
     width: 120,
-    color: "#fff",
+    color: "#13345c", // Changed to match app's blue color
   },
   detailValue: {
     fontSize: 16,
     flex: 1,
-    color: "#fff",
+    color: "#555", // Changed to darker text for better readability
+  },
+  link: {
+    color: "#3498db",
+    textDecorationLine: "underline",
+  },
+  buttonContainer: {
+    marginTop: 10,
+    marginBottom: 40,
+  },
+  buttonSpacer: {
+    height: 12,
   },
 });
 

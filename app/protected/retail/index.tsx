@@ -185,9 +185,7 @@ export default function RetailServicesScreen() {
             <TouchableOpacity
               key={store.id}
               style={styles.storeCard}
-              onPress={() =>
-                router.push(`/protected/retail/details/${store.id}`)
-              }
+              onPress={() => router.push(`/protected/retail/${store.id}`)}
             >
               <View style={styles.storeHeader}>
                 <Text style={styles.storeName}>{store.name}</Text>
