@@ -8,8 +8,9 @@ type GeneratedQuery<InputType, OutputType> = string & {
   __generatedQueryOutput: OutputType;
 };
 
-export const getCharity = /* GraphQL */ `query GetCharity($id: ID!) {
-  getCharity(id: $id) {
+export const getCharitiesWithCategories = /* GraphQL */ `query GetCharitiesWithCategories($id: ID!) {
+  getCharitiesWithCategories(id: $id) {
+    id
     name
     mission
     email
@@ -20,23 +21,27 @@ export const getCharity = /* GraphQL */ `query GetCharity($id: ID!) {
     processLink
     product
     category
-    id
     createdAt
     updatedAt
     __typename
   }
 }
 ` as GeneratedQuery<
-  APITypes.GetCharityQueryVariables,
-  APITypes.GetCharityQuery
+  APITypes.GetCharitiesWithCategoriesQueryVariables,
+  APITypes.GetCharitiesWithCategoriesQuery
 >;
-export const listCharities = /* GraphQL */ `query ListCharities(
-  $filter: ModelCharityFilterInput
+export const listCharitiesWithCategories = /* GraphQL */ `query ListCharitiesWithCategories(
+  $filter: ModelCharitiesWithCategoriesFilterInput
   $limit: Int
   $nextToken: String
 ) {
-  listCharities(filter: $filter, limit: $limit, nextToken: $nextToken) {
+  listCharitiesWithCategories(
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
     items {
+      id
       name
       mission
       email
@@ -47,7 +52,6 @@ export const listCharities = /* GraphQL */ `query ListCharities(
       processLink
       product
       category
-      id
       createdAt
       updatedAt
       __typename
@@ -57,6 +61,6 @@ export const listCharities = /* GraphQL */ `query ListCharities(
   }
 }
 ` as GeneratedQuery<
-  APITypes.ListCharitiesQueryVariables,
-  APITypes.ListCharitiesQuery
+  APITypes.ListCharitiesWithCategoriesQueryVariables,
+  APITypes.ListCharitiesWithCategoriesQuery
 >;

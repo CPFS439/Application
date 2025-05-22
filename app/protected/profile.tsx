@@ -8,17 +8,26 @@ import {
   TouchableOpacity,
   Platform,
   Alert,
+  TextInput,
+  Modal,
 } from "react-native";
 import { getCurrentUser } from "aws-amplify/auth";
 import { globalStyles } from "../../styles/globalStyles";
 import * as ImagePicker from "expo-image-picker";
 
-// Placeholder user profile data
+// Placeholder user profile data with added address fields
 const PLACEHOLDER_USER_PROFILE = {
   militaryBranch: "Air Force",
   age: "28",
   phoneNumber: "(555) 123-4567",
   profilePicture: null,
+  address: {
+    street: "123 Veterans Way",
+    city: "Arlington",
+    state: "VA",
+    zipCode: "22209",
+    country: "USA",
+  },
 };
 
 export default function ProfileScreen() {
@@ -26,6 +35,10 @@ export default function ProfileScreen() {
   const [userProfile, setUserProfile] = useState(PLACEHOLDER_USER_PROFILE);
   const [loading, setLoading] = useState(true);
   const [profileImage, setProfileImage] = useState(null);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editedProfile, setEditedProfile] = useState({
+    ...PLACEHOLDER_USER_PROFILE,
+  });
 
   useEffect(() => {
     async function fetchUserData() {
@@ -78,6 +91,18 @@ export default function ProfileScreen() {
         profilePicture: newImage,
       });
     }
+  };
+
+  const openEditModal = () => {
+    setEditedProfile({ ...userProfile });
+    setEditModalVisible(true);
+  };
+
+  const saveProfile = () => {
+    // In a real app, you would save to backend here
+    setUserProfile(editedProfile);
+    setEditModalVisible(false);
+    Alert.alert("Success", "Profile updated successfully");
   };
 
   if (loading) {
@@ -153,18 +178,182 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={() =>
-            Alert.alert(
-              "Coming Soon",
-              "Profile editing will be available in a future update."
-            )
-          }
-        >
+        {/* New Address Section */}
+        <View style={styles.infoSection}>
+          <Text style={styles.sectionTitle}>Address</Text>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Street:</Text>
+            <Text style={styles.infoValue}>
+              {userProfile?.address?.street || "Not specified"}
+            </Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>City:</Text>
+            <Text style={styles.infoValue}>
+              {userProfile?.address?.city || "Not specified"}
+            </Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>State:</Text>
+            <Text style={styles.infoValue}>
+              {userProfile?.address?.state || "Not specified"}
+            </Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Zip Code:</Text>
+            <Text style={styles.infoValue}>
+              {userProfile?.address?.zipCode || "Not specified"}
+            </Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Country:</Text>
+            <Text style={styles.infoValue}>
+              {userProfile?.address?.country || "Not specified"}
+            </Text>
+          </View>
+        </View>
+
+        <TouchableOpacity style={styles.editButton} onPress={openEditModal}>
           <Text style={styles.editButtonText}>Edit Profile</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Edit Profile Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={editModalVisible}
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Edit Profile</Text>
+
+            <ScrollView style={styles.modalScrollView}>
+              <Text style={styles.inputLabel}>Military Branch</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.militaryBranch}
+                onChangeText={(text) =>
+                  setEditedProfile({ ...editedProfile, militaryBranch: text })
+                }
+                placeholder="Enter military branch"
+              />
+
+              <Text style={styles.inputLabel}>Age</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.age}
+                onChangeText={(text) =>
+                  setEditedProfile({ ...editedProfile, age: text })
+                }
+                placeholder="Enter age"
+                keyboardType="number-pad"
+              />
+
+              <Text style={styles.inputLabel}>Phone Number</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.phoneNumber}
+                onChangeText={(text) =>
+                  setEditedProfile({ ...editedProfile, phoneNumber: text })
+                }
+                placeholder="Enter phone number"
+                keyboardType="phone-pad"
+              />
+
+              <Text style={styles.sectionTitle}>Address</Text>
+
+              <Text style={styles.inputLabel}>Street</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.address.street}
+                onChangeText={(text) =>
+                  setEditedProfile({
+                    ...editedProfile,
+                    address: { ...editedProfile.address, street: text },
+                  })
+                }
+                placeholder="Enter street address"
+              />
+
+              <Text style={styles.inputLabel}>City</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.address.city}
+                onChangeText={(text) =>
+                  setEditedProfile({
+                    ...editedProfile,
+                    address: { ...editedProfile.address, city: text },
+                  })
+                }
+                placeholder="Enter city"
+              />
+
+              <Text style={styles.inputLabel}>State</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.address.state}
+                onChangeText={(text) =>
+                  setEditedProfile({
+                    ...editedProfile,
+                    address: { ...editedProfile.address, state: text },
+                  })
+                }
+                placeholder="Enter state"
+              />
+
+              <Text style={styles.inputLabel}>Zip Code</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.address.zipCode}
+                onChangeText={(text) =>
+                  setEditedProfile({
+                    ...editedProfile,
+                    address: { ...editedProfile.address, zipCode: text },
+                  })
+                }
+                placeholder="Enter zip code"
+                keyboardType="number-pad"
+              />
+
+              <Text style={styles.inputLabel}>Country</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.address.country}
+                onChangeText={(text) =>
+                  setEditedProfile({
+                    ...editedProfile,
+                    address: { ...editedProfile.address, country: text },
+                  })
+                }
+                placeholder="Enter country"
+              />
+            </ScrollView>
+
+            <View style={styles.modalButtonsContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setEditModalVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.saveButton]}
+                onPress={saveProfile}
+              >
+                <Text style={styles.saveButtonText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -177,6 +366,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    paddingBottom: 50,
     alignItems: "center",
   },
   header: {
@@ -231,6 +421,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#13345c",
+    marginBottom: 12,
+  },
   infoRow: {
     flexDirection: "row",
     paddingVertical: 12,
@@ -254,10 +450,84 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     borderRadius: 25,
     marginTop: 10,
+    marginBottom: 30,
   },
   editButtonText: {
     color: "white",
     fontSize: 16,
+    fontWeight: "bold",
+  },
+  // Modal styles
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 20,
+    width: "100%",
+    maxWidth: 500,
+    maxHeight: "80%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#13345c",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  modalScrollView: {
+    maxHeight: 400,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#555",
+    marginBottom: 5,
+  },
+  input: {
+    backgroundColor: "#f5f5f5",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 15,
+    fontSize: 16,
+  },
+  modalButtonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  cancelButton: {
+    backgroundColor: "#f5f5f5",
+    marginRight: 10,
+  },
+  saveButton: {
+    backgroundColor: "#2196F3",
+    marginLeft: 10,
+  },
+  cancelButtonText: {
+    color: "#333",
+    fontWeight: "bold",
+  },
+  saveButtonText: {
+    color: "white",
     fontWeight: "bold",
   },
 });

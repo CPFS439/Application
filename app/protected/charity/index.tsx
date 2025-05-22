@@ -14,11 +14,12 @@ import { generateClient } from "aws-amplify/api";
 
 const client = generateClient();
 
-// Define a custom query that excludes createdAt and updatedAt
+// Update the query to use listCharitiesWithCategories
 const listCharitiesQuery = /* GraphQL */ `
-  query ListCharities {
-    listCharities {
+  query ListCharitiesWithCategories {
+    listCharitiesWithCategories(limit: 100) {
       items {
+        id
         name
         mission
         email
@@ -89,8 +90,14 @@ export default function CharityServicesScreen() {
         // Query the GraphQL API using the custom query
         const response = await client.graphql({ query: listCharitiesQuery });
 
-        // Extract the charities from the response
-        const charitiesData = response.data.listCharities.items;
+        // Log the full response for debugging
+        console.log(
+          "Full GraphQL response:",
+          JSON.stringify(response, null, 2)
+        );
+
+        // Extract the charities from the response - updated to use listCharitiesWithCategories
+        const charitiesData = response.data.listCharitiesWithCategories.items;
 
         // Console log the results
         console.log(
@@ -181,7 +188,7 @@ export default function CharityServicesScreen() {
         ) : (
           filteredCharities.map((charity, index) => (
             <TouchableOpacity
-              key={charity.name || `charity-${index}`}
+              key={charity.id || `charity-${index}`}
               style={styles.charityCard}
               onPress={() =>
                 router.push(

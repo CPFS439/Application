@@ -8,8 +8,11 @@ type GeneratedSubscription<InputType, OutputType> = string & {
   __generatedSubscriptionOutput: OutputType;
 };
 
-export const onCreateCharity = /* GraphQL */ `subscription OnCreateCharity($filter: ModelSubscriptionCharityFilterInput) {
-  onCreateCharity(filter: $filter) {
+export const onCreateCharitiesWithCategories = /* GraphQL */ `subscription OnCreateCharitiesWithCategories(
+  $filter: ModelSubscriptionCharitiesWithCategoriesFilterInput
+) {
+  onCreateCharitiesWithCategories(filter: $filter) {
+    id
     name
     mission
     email
@@ -20,18 +23,20 @@ export const onCreateCharity = /* GraphQL */ `subscription OnCreateCharity($filt
     processLink
     product
     category
-    id
     createdAt
     updatedAt
     __typename
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnCreateCharitySubscriptionVariables,
-  APITypes.OnCreateCharitySubscription
+  APITypes.OnCreateCharitiesWithCategoriesSubscriptionVariables,
+  APITypes.OnCreateCharitiesWithCategoriesSubscription
 >;
-export const onUpdateCharity = /* GraphQL */ `subscription OnUpdateCharity($filter: ModelSubscriptionCharityFilterInput) {
-  onUpdateCharity(filter: $filter) {
+export const onUpdateCharitiesWithCategories = /* GraphQL */ `subscription OnUpdateCharitiesWithCategories(
+  $filter: ModelSubscriptionCharitiesWithCategoriesFilterInput
+) {
+  onUpdateCharitiesWithCategories(filter: $filter) {
+    id
     name
     mission
     email
@@ -42,18 +47,20 @@ export const onUpdateCharity = /* GraphQL */ `subscription OnUpdateCharity($filt
     processLink
     product
     category
-    id
     createdAt
     updatedAt
     __typename
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnUpdateCharitySubscriptionVariables,
-  APITypes.OnUpdateCharitySubscription
+  APITypes.OnUpdateCharitiesWithCategoriesSubscriptionVariables,
+  APITypes.OnUpdateCharitiesWithCategoriesSubscription
 >;
-export const onDeleteCharity = /* GraphQL */ `subscription OnDeleteCharity($filter: ModelSubscriptionCharityFilterInput) {
-  onDeleteCharity(filter: $filter) {
+export const onDeleteCharitiesWithCategories = /* GraphQL */ `subscription OnDeleteCharitiesWithCategories(
+  $filter: ModelSubscriptionCharitiesWithCategoriesFilterInput
+) {
+  onDeleteCharitiesWithCategories(filter: $filter) {
+    id
     name
     mission
     email
@@ -64,13 +71,12 @@ export const onDeleteCharity = /* GraphQL */ `subscription OnDeleteCharity($filt
     processLink
     product
     category
-    id
     createdAt
     updatedAt
     __typename
   }
 }
 ` as GeneratedSubscription<
-  APITypes.OnDeleteCharitySubscriptionVariables,
-  APITypes.OnDeleteCharitySubscription
+  APITypes.OnDeleteCharitiesWithCategoriesSubscriptionVariables,
+  APITypes.OnDeleteCharitiesWithCategoriesSubscription
 >;

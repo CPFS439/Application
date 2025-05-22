@@ -46,7 +46,8 @@ const TopNavBar: React.FC = () => {
     if (pathname === "/") return "Home";
     if (pathname === "/menu") return "Menu";
     if (pathname.includes("/protected/charity")) return "Charity Services";
-    if (pathname.includes("/protected/retail")) return "Retail Services";
+    if (pathname.includes("/protected/retail"))
+      return "Cell Phones For Soldiers Services";
     if (pathname.includes("/protected/profile")) return "Profile";
 
     return "CFS Marketplace";

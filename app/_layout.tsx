@@ -11,7 +11,7 @@ export default function RootLayout() {
   if (!fontsLoaded) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Loading fonts...</Text>
+        <Text>Loading...</Text>
       </View>
     );
   }

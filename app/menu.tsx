@@ -110,16 +110,30 @@ const MenuScreen = () => {
     { title: "Contact Us", icon: "mail-outline", route: "/contact" },
   ];
 
-  // Authenticated-only menu items
+  // Updated authenticated-only menu items
   const authenticatedMenuItems = [
     {
-      title: "My Account",
-      icon: "person-circle-outline",
-      route: "/protected/profile",
+      title: "Veteran Public Services Map",
+      icon: "map-outline",
+      route: "/protected/services-map",
     },
-    { title: "My Orders", icon: "receipt-outline", route: "/protected/orders" },
     {
-      title: "Saved Items",
+      title: "Veteran Collaboration Tool",
+      icon: "people-outline",
+      route: "/protected/collaboration",
+    },
+    {
+      title: "Retail Services",
+      icon: "cart-outline",
+      route: "/protected/retail",
+    },
+    {
+      title: "CPFS Orders",
+      icon: "receipt-outline",
+      route: "/protected/orders",
+    },
+    {
+      title: "My Saved Submissions",
       icon: "bookmark-outline",
       route: "/protected/saved",
     },
@@ -127,10 +141,9 @@ const MenuScreen = () => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* User-specific section */}
+      {/* User-specific section - removed subtitle */}
       {isAuthenticated && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>My Account</Text>
           {authenticatedMenuItems.map((item, index) => (
             <TouchableOpacity
               key={`auth-${index}`}

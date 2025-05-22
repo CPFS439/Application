@@ -8,11 +8,12 @@ type GeneratedMutation<InputType, OutputType> = string & {
   __generatedMutationOutput: OutputType;
 };
 
-export const createCharity = /* GraphQL */ `mutation CreateCharity(
-  $input: CreateCharityInput!
-  $condition: ModelCharityConditionInput
+export const createCharitiesWithCategories = /* GraphQL */ `mutation CreateCharitiesWithCategories(
+  $input: CreateCharitiesWithCategoriesInput!
+  $condition: ModelCharitiesWithCategoriesConditionInput
 ) {
-  createCharity(input: $input, condition: $condition) {
+  createCharitiesWithCategories(input: $input, condition: $condition) {
+    id
     name
     mission
     email
@@ -23,21 +24,21 @@ export const createCharity = /* GraphQL */ `mutation CreateCharity(
     processLink
     product
     category
-    id
     createdAt
     updatedAt
     __typename
   }
 }
 ` as GeneratedMutation<
-  APITypes.CreateCharityMutationVariables,
-  APITypes.CreateCharityMutation
+  APITypes.CreateCharitiesWithCategoriesMutationVariables,
+  APITypes.CreateCharitiesWithCategoriesMutation
 >;
-export const updateCharity = /* GraphQL */ `mutation UpdateCharity(
-  $input: UpdateCharityInput!
-  $condition: ModelCharityConditionInput
+export const updateCharitiesWithCategories = /* GraphQL */ `mutation UpdateCharitiesWithCategories(
+  $input: UpdateCharitiesWithCategoriesInput!
+  $condition: ModelCharitiesWithCategoriesConditionInput
 ) {
-  updateCharity(input: $input, condition: $condition) {
+  updateCharitiesWithCategories(input: $input, condition: $condition) {
+    id
     name
     mission
     email
@@ -48,21 +49,21 @@ export const updateCharity = /* GraphQL */ `mutation UpdateCharity(
     processLink
     product
     category
-    id
     createdAt
     updatedAt
     __typename
   }
 }
 ` as GeneratedMutation<
-  APITypes.UpdateCharityMutationVariables,
-  APITypes.UpdateCharityMutation
+  APITypes.UpdateCharitiesWithCategoriesMutationVariables,
+  APITypes.UpdateCharitiesWithCategoriesMutation
 >;
-export const deleteCharity = /* GraphQL */ `mutation DeleteCharity(
-  $input: DeleteCharityInput!
-  $condition: ModelCharityConditionInput
+export const deleteCharitiesWithCategories = /* GraphQL */ `mutation DeleteCharitiesWithCategories(
+  $input: DeleteCharitiesWithCategoriesInput!
+  $condition: ModelCharitiesWithCategoriesConditionInput
 ) {
-  deleteCharity(input: $input, condition: $condition) {
+  deleteCharitiesWithCategories(input: $input, condition: $condition) {
+    id
     name
     mission
     email
@@ -73,13 +74,12 @@ export const deleteCharity = /* GraphQL */ `mutation DeleteCharity(
     processLink
     product
     category
-    id
     createdAt
     updatedAt
     __typename
   }
 }
 ` as GeneratedMutation<
-  APITypes.DeleteCharityMutationVariables,
-  APITypes.DeleteCharityMutation
+  APITypes.DeleteCharitiesWithCategoriesMutationVariables,
+  APITypes.DeleteCharitiesWithCategoriesMutation
 >;

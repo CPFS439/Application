@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -7,16 +7,22 @@ import {
   ScrollView,
   Text,
   ImageBackground,
+  TouchableOpacity,
+  Linking,
+  Platform,
 } from "react-native";
 import { Amplify } from "aws-amplify";
 import awsExports from "../src/aws-exports";
 Amplify.configure(awsExports);
 import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function HomeScreen() {
   const [screenDimensions, setScreenDimensions] = useState(
     Dimensions.get("window")
   );
+  const [activeInitiative, setActiveInitiative] = useState(0);
+  const initiativeRef = useRef(null);
 
   useEffect(() => {
     const subscription = Dimensions.addEventListener("change", ({ window }) => {
@@ -42,6 +48,82 @@ export default function HomeScreen() {
   // Calculate positions for layout
   const heroHeight = (screenDimensions.width * 9) / 16;
   const gapSize = 33; // 33 pixel gap between hero and mission
+
+  // Initiatives data
+  const initiatives = [
+    {
+      id: "1",
+      title: "Cellphones For Soldiers Mobile",
+      description:
+        "Providing veterans with a free phone and a year of paid phone service.",
+      icon: "phone-portrait-outline",
+      color: "#3498db",
+      url: "https://www.cellphonesforsoldiers.com/mobile/",
+    },
+    {
+      id: "2",
+      title: "Helping Heroes Home",
+      description:
+        "Providing financial assistance to military members and veterans in times of crisis or need.",
+      icon: "home-outline",
+      color: "#e74c3c",
+      url: "https://www.cellphonesforsoldiers.com/veterans-aid-helping-heroes-home/",
+    },
+    {
+      id: "3",
+      title: "Minutes That Matter",
+      description:
+        "Connecting deployed personnel with their loved ones by providing international calling cards.",
+      icon: "time-outline",
+      color: "#2ecc71",
+      url: "https://www.cellphonesforsoldiers.com/minutes-that-matter/",
+    },
+    {
+      id: "4",
+      title: "Environmental Impact",
+      description:
+        "Reducing electronic waste and its impact on the environment through cell phone recycling.",
+      icon: "leaf-outline",
+      color: "#f39c12",
+      url: "", // Add URL when available
+    },
+  ];
+
+  // Auto-scroll the initiatives carousel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (initiativeRef.current) {
+        const nextIndex = (activeInitiative + 1) % initiatives.length;
+
+        // For web compatibility, use scrollTo with calculated offset instead of scrollToIndex
+        const offset = nextIndex * (Dimensions.get("window").width - 40 + 20); // card width + margin
+
+        try {
+          initiativeRef.current.scrollToOffset({
+            offset,
+            animated: true,
+          });
+          setActiveInitiative(nextIndex);
+        } catch (error) {
+          console.log("Scroll error:", error);
+        }
+      }
+    }, 5000); // Change every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [activeInitiative]);
+
+  const handleOpenLink = (url) => {
+    if (!url) return;
+
+    if (Platform.OS === "web") {
+      // For web, open in a new tab
+      window.open(url, "_blank");
+    } else {
+      // For mobile, open in device browser
+      Linking.openURL(url);
+    }
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -126,6 +208,117 @@ export default function HomeScreen() {
               </Text>
             </View>
           </ImageBackground>
+        </View>
+
+        <View style={styles.cpfsContainer}>
+          <View style={styles.cpfsContent}>
+            <View style={styles.cpfsTextContainer}>
+              <Text style={styles.cpfsSectionTitle}>
+                What is Cell Phones For Soldiers?
+              </Text>
+              <Text style={styles.cpfsDescription}>
+                Cell Phones For Soldiers is a national non-profit organization
+                dedicated to providing cost-free communication services and
+                emergency funding to active-duty military members and veterans.
+              </Text>
+            </View>
+            <View style={styles.cpfsImageContainer}>
+              <Image
+                source={require("../assets/images/Four_Color_Logo-300x300.webp")}
+                style={styles.cpfsLogo}
+                resizeMode="contain"
+              />
+            </View>
+          </View>
+        </View>
+
+        {/* Our Initiatives Section */}
+        <View style={styles.initiativesContainer}>
+          <Text style={styles.initiativesSectionTitle}>Our Initiatives</Text>
+          <Text style={styles.initiativesSubtext}>
+            Making a difference through various programs and initiatives. Our
+            newest initiative, CellPhones For Soldiers Mobile, provides veterans
+            with free phones and services to help bridge the gap and keep them
+            connected.
+          </Text>
+
+          {/* Initiatives Carousel */}
+          <View style={styles.carouselContainer}>
+            {/* Navigation Buttons */}
+            <TouchableOpacity
+              style={[styles.navButton, styles.navButtonLeft]}
+              onPress={() => {
+                setActiveInitiative((current) =>
+                  current === 0 ? initiatives.length - 1 : current - 1
+                );
+              }}
+            >
+              <Ionicons name="chevron-back" size={24} color="#13345c" />
+            </TouchableOpacity>
+
+            {/* Current Initiative Card */}
+            <TouchableOpacity
+              style={[
+                styles.initiativeCard,
+                initiatives[activeInitiative].url
+                  ? styles.initiativeCardClickable
+                  : null,
+              ]}
+              onPress={() => handleOpenLink(initiatives[activeInitiative].url)}
+              disabled={!initiatives[activeInitiative].url}
+            >
+              <View
+                style={[
+                  styles.initiativeIconContainer,
+                  { backgroundColor: initiatives[activeInitiative].color },
+                ]}
+              >
+                <Ionicons
+                  name={initiatives[activeInitiative].icon}
+                  size={40}
+                  color="white"
+                />
+              </View>
+              <Text style={styles.initiativeTitle}>
+                {initiatives[activeInitiative].title}
+              </Text>
+              <Text style={styles.initiativeDescription}>
+                {initiatives[activeInitiative].description}
+              </Text>
+
+              {initiatives[activeInitiative].url && (
+                <View style={styles.learnMoreContainer}>
+                  <Text style={styles.learnMoreText}>Learn More</Text>
+                  <Ionicons name="arrow-forward" size={16} color="#3498db" />
+                </View>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.navButton, styles.navButtonRight]}
+              onPress={() => {
+                setActiveInitiative(
+                  (current) => (current + 1) % initiatives.length
+                );
+              }}
+            >
+              <Ionicons name="chevron-forward" size={24} color="#13345c" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Pagination Dots */}
+          <View style={styles.paginationContainer}>
+            {initiatives.map((_, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => setActiveInitiative(index)}
+                style={[
+                  styles.paginationDot,
+                  index === activeInitiative && styles.paginationDotActive,
+                ]}
+              />
+            ))}
+          </View>
         </View>
 
         {/* You can add more content below here */}
@@ -231,5 +424,171 @@ const styles = StyleSheet.create({
   },
   emptySpace: {
     height: 100,
+  },
+  cpfsContainer: {
+    backgroundColor: "#fff",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    marginTop: 20,
+    width: "100%",
+  },
+  cpfsContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    maxWidth: 1200,
+    marginHorizontal: "auto",
+  },
+  cpfsTextContainer: {
+    flex: 1,
+    paddingRight: 20,
+  },
+  cpfsSectionTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#13345c",
+    marginBottom: 16,
+  },
+  cpfsDescription: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: "#555",
+  },
+  cpfsImageContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cpfsLogo: {
+    width: 250,
+    height: 250,
+  },
+
+  // Our Initiatives Section Styles
+  initiativesContainer: {
+    backgroundColor: "#f5f5f5",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    marginTop: 20,
+    width: "100%",
+    alignItems: "center",
+  },
+  initiativesSectionTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#13345c",
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  initiativesSubtext: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: "#555",
+    textAlign: "center",
+    marginBottom: 30,
+    maxWidth: 800,
+  },
+  initiativesCarousel: {
+    paddingVertical: 10,
+  },
+  carouselContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    marginVertical: 20,
+    position: "relative",
+  },
+  initiativeCard: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
+    alignItems: "center",
+    width: "80%",
+    maxWidth: 500,
+    minHeight: 250,
+    justifyContent: "center",
+  },
+  initiativeIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  initiativeTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#13345c",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  initiativeDescription: {
+    fontSize: 16,
+    color: "#555",
+    textAlign: "center",
+    lineHeight: 22,
+  },
+  navButton: {
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
+    zIndex: 10,
+  },
+  navButtonLeft: {
+    marginRight: -20,
+  },
+  navButtonRight: {
+    marginLeft: -20,
+  },
+  paginationContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 20,
+  },
+  paginationDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#ccc",
+    marginHorizontal: 5,
+  },
+  paginationDotActive: {
+    backgroundColor: "#13345c",
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  initiativeCardClickable: {
+    cursor: "pointer",
+    borderColor: "#3498db",
+    borderWidth: 1,
+  },
+  learnMoreContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 15,
+    padding: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+  },
+  learnMoreText: {
+    color: "#3498db",
+    fontWeight: "bold",
+    marginRight: 5,
   },
 });

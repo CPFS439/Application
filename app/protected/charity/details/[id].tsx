@@ -15,9 +15,10 @@ import { generateClient } from "aws-amplify/api";
 
 // Define a query to get charity by name
 const getCharityByNameQuery = /* GraphQL */ `
-  query ListCharities($name: String!) {
-    listCharities(filter: { name: { eq: $name } }) {
+  query ListCharitiesWithCategories($name: String!) {
+    listCharitiesWithCategories(filter: { name: { eq: $name } }) {
       items {
+        id
         name
         mission
         email
@@ -63,8 +64,14 @@ function CharityDetailScreen() {
           variables: { name: charityName },
         });
 
-        // Extract the charity from the response
-        const charities = response.data.listCharities.items;
+        // Log the full response for debugging
+        console.log(
+          "Full GraphQL response:",
+          JSON.stringify(response, null, 2)
+        );
+
+        // Extract the charity from the response - FIXED: use listCharitiesWithCategories instead of listBetaCharities
+        const charities = response.data.listCharitiesWithCategories.items;
         console.log(
           "Charity query response:",
           JSON.stringify(charities, null, 2)

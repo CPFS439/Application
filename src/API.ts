@@ -2,7 +2,8 @@
 /* eslint-disable */
 //  This file was automatically generated and should not be edited.
 
-export type CreateCharityInput = {
+export type CreateCharitiesWithCategoriesInput = {
+  id?: string | null,
   name: string,
   mission?: string | null,
   email?: string | null,
@@ -13,10 +14,9 @@ export type CreateCharityInput = {
   processLink?: string | null,
   product?: string | null,
   category?: string | null,
-  id?: string | null,
 };
 
-export type ModelCharityConditionInput = {
+export type ModelCharitiesWithCategoriesConditionInput = {
   name?: ModelStringInput | null,
   mission?: ModelStringInput | null,
   email?: ModelStringInput | null,
@@ -27,9 +27,9 @@ export type ModelCharityConditionInput = {
   processLink?: ModelStringInput | null,
   product?: ModelStringInput | null,
   category?: ModelStringInput | null,
-  and?: Array< ModelCharityConditionInput | null > | null,
-  or?: Array< ModelCharityConditionInput | null > | null,
-  not?: ModelCharityConditionInput | null,
+  and?: Array< ModelCharitiesWithCategoriesConditionInput | null > | null,
+  or?: Array< ModelCharitiesWithCategoriesConditionInput | null > | null,
+  not?: ModelCharitiesWithCategoriesConditionInput | null,
   createdAt?: ModelStringInput | null,
   updatedAt?: ModelStringInput | null,
 };
@@ -74,8 +74,9 @@ export type ModelSizeInput = {
   between?: Array< number | null > | null,
 };
 
-export type Charity = {
-  __typename: "Charity",
+export type CharitiesWithCategories = {
+  __typename: "CharitiesWithCategories",
+  id?: string | null,
   name: string,
   mission?: string | null,
   email?: string | null,
@@ -86,12 +87,12 @@ export type Charity = {
   processLink?: string | null,
   product?: string | null,
   category?: string | null,
-  id: string,
   createdAt: string,
   updatedAt: string,
 };
 
-export type UpdateCharityInput = {
+export type UpdateCharitiesWithCategoriesInput = {
+  id: string,
   name?: string | null,
   mission?: string | null,
   email?: string | null,
@@ -102,14 +103,14 @@ export type UpdateCharityInput = {
   processLink?: string | null,
   product?: string | null,
   category?: string | null,
+};
+
+export type DeleteCharitiesWithCategoriesInput = {
   id: string,
 };
 
-export type DeleteCharityInput = {
-  id: string,
-};
-
-export type ModelCharityFilterInput = {
+export type ModelCharitiesWithCategoriesFilterInput = {
+  id?: ModelIDInput | null,
   name?: ModelStringInput | null,
   mission?: ModelStringInput | null,
   email?: ModelStringInput | null,
@@ -120,12 +121,11 @@ export type ModelCharityFilterInput = {
   processLink?: ModelStringInput | null,
   product?: ModelStringInput | null,
   category?: ModelStringInput | null,
-  id?: ModelIDInput | null,
   createdAt?: ModelStringInput | null,
   updatedAt?: ModelStringInput | null,
-  and?: Array< ModelCharityFilterInput | null > | null,
-  or?: Array< ModelCharityFilterInput | null > | null,
-  not?: ModelCharityFilterInput | null,
+  and?: Array< ModelCharitiesWithCategoriesFilterInput | null > | null,
+  or?: Array< ModelCharitiesWithCategoriesFilterInput | null > | null,
+  not?: ModelCharitiesWithCategoriesFilterInput | null,
 };
 
 export type ModelIDInput = {
@@ -144,13 +144,14 @@ export type ModelIDInput = {
   size?: ModelSizeInput | null,
 };
 
-export type ModelCharityConnection = {
-  __typename: "ModelCharityConnection",
-  items:  Array<Charity | null >,
+export type ModelCharitiesWithCategoriesConnection = {
+  __typename: "ModelCharitiesWithCategoriesConnection",
+  items:  Array<CharitiesWithCategories | null >,
   nextToken?: string | null,
 };
 
-export type ModelSubscriptionCharityFilterInput = {
+export type ModelSubscriptionCharitiesWithCategoriesFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
   name?: ModelSubscriptionStringInput | null,
   mission?: ModelSubscriptionStringInput | null,
   email?: ModelSubscriptionStringInput | null,
@@ -161,26 +162,10 @@ export type ModelSubscriptionCharityFilterInput = {
   processLink?: ModelSubscriptionStringInput | null,
   product?: ModelSubscriptionStringInput | null,
   category?: ModelSubscriptionStringInput | null,
-  id?: ModelSubscriptionIDInput | null,
   createdAt?: ModelSubscriptionStringInput | null,
   updatedAt?: ModelSubscriptionStringInput | null,
-  and?: Array< ModelSubscriptionCharityFilterInput | null > | null,
-  or?: Array< ModelSubscriptionCharityFilterInput | null > | null,
-};
-
-export type ModelSubscriptionStringInput = {
-  ne?: string | null,
-  eq?: string | null,
-  le?: string | null,
-  lt?: string | null,
-  ge?: string | null,
-  gt?: string | null,
-  contains?: string | null,
-  notContains?: string | null,
-  between?: Array< string | null > | null,
-  beginsWith?: string | null,
-  in?: Array< string | null > | null,
-  notIn?: Array< string | null > | null,
+  and?: Array< ModelSubscriptionCharitiesWithCategoriesFilterInput | null > | null,
+  or?: Array< ModelSubscriptionCharitiesWithCategoriesFilterInput | null > | null,
 };
 
 export type ModelSubscriptionIDInput = {
@@ -198,14 +183,30 @@ export type ModelSubscriptionIDInput = {
   notIn?: Array< string | null > | null,
 };
 
-export type CreateCharityMutationVariables = {
-  input: CreateCharityInput,
-  condition?: ModelCharityConditionInput | null,
+export type ModelSubscriptionStringInput = {
+  ne?: string | null,
+  eq?: string | null,
+  le?: string | null,
+  lt?: string | null,
+  ge?: string | null,
+  gt?: string | null,
+  contains?: string | null,
+  notContains?: string | null,
+  between?: Array< string | null > | null,
+  beginsWith?: string | null,
+  in?: Array< string | null > | null,
+  notIn?: Array< string | null > | null,
 };
 
-export type CreateCharityMutation = {
-  createCharity?:  {
-    __typename: "Charity",
+export type CreateCharitiesWithCategoriesMutationVariables = {
+  input: CreateCharitiesWithCategoriesInput,
+  condition?: ModelCharitiesWithCategoriesConditionInput | null,
+};
+
+export type CreateCharitiesWithCategoriesMutation = {
+  createCharitiesWithCategories?:  {
+    __typename: "CharitiesWithCategories",
+    id?: string | null,
     name: string,
     mission?: string | null,
     email?: string | null,
@@ -216,20 +217,20 @@ export type CreateCharityMutation = {
     processLink?: string | null,
     product?: string | null,
     category?: string | null,
-    id: string,
     createdAt: string,
     updatedAt: string,
   } | null,
 };
 
-export type UpdateCharityMutationVariables = {
-  input: UpdateCharityInput,
-  condition?: ModelCharityConditionInput | null,
+export type UpdateCharitiesWithCategoriesMutationVariables = {
+  input: UpdateCharitiesWithCategoriesInput,
+  condition?: ModelCharitiesWithCategoriesConditionInput | null,
 };
 
-export type UpdateCharityMutation = {
-  updateCharity?:  {
-    __typename: "Charity",
+export type UpdateCharitiesWithCategoriesMutation = {
+  updateCharitiesWithCategories?:  {
+    __typename: "CharitiesWithCategories",
+    id?: string | null,
     name: string,
     mission?: string | null,
     email?: string | null,
@@ -240,20 +241,20 @@ export type UpdateCharityMutation = {
     processLink?: string | null,
     product?: string | null,
     category?: string | null,
-    id: string,
     createdAt: string,
     updatedAt: string,
   } | null,
 };
 
-export type DeleteCharityMutationVariables = {
-  input: DeleteCharityInput,
-  condition?: ModelCharityConditionInput | null,
+export type DeleteCharitiesWithCategoriesMutationVariables = {
+  input: DeleteCharitiesWithCategoriesInput,
+  condition?: ModelCharitiesWithCategoriesConditionInput | null,
 };
 
-export type DeleteCharityMutation = {
-  deleteCharity?:  {
-    __typename: "Charity",
+export type DeleteCharitiesWithCategoriesMutation = {
+  deleteCharitiesWithCategories?:  {
+    __typename: "CharitiesWithCategories",
+    id?: string | null,
     name: string,
     mission?: string | null,
     email?: string | null,
@@ -264,19 +265,19 @@ export type DeleteCharityMutation = {
     processLink?: string | null,
     product?: string | null,
     category?: string | null,
-    id: string,
     createdAt: string,
     updatedAt: string,
   } | null,
 };
 
-export type GetCharityQueryVariables = {
+export type GetCharitiesWithCategoriesQueryVariables = {
   id: string,
 };
 
-export type GetCharityQuery = {
-  getCharity?:  {
-    __typename: "Charity",
+export type GetCharitiesWithCategoriesQuery = {
+  getCharitiesWithCategories?:  {
+    __typename: "CharitiesWithCategories",
+    id?: string | null,
     name: string,
     mission?: string | null,
     email?: string | null,
@@ -287,23 +288,23 @@ export type GetCharityQuery = {
     processLink?: string | null,
     product?: string | null,
     category?: string | null,
-    id: string,
     createdAt: string,
     updatedAt: string,
   } | null,
 };
 
-export type ListCharitiesQueryVariables = {
-  filter?: ModelCharityFilterInput | null,
+export type ListCharitiesWithCategoriesQueryVariables = {
+  filter?: ModelCharitiesWithCategoriesFilterInput | null,
   limit?: number | null,
   nextToken?: string | null,
 };
 
-export type ListCharitiesQuery = {
-  listCharities?:  {
-    __typename: "ModelCharityConnection",
+export type ListCharitiesWithCategoriesQuery = {
+  listCharitiesWithCategories?:  {
+    __typename: "ModelCharitiesWithCategoriesConnection",
     items:  Array< {
-      __typename: "Charity",
+      __typename: "CharitiesWithCategories",
+      id?: string | null,
       name: string,
       mission?: string | null,
       email?: string | null,
@@ -314,7 +315,6 @@ export type ListCharitiesQuery = {
       processLink?: string | null,
       product?: string | null,
       category?: string | null,
-      id: string,
       createdAt: string,
       updatedAt: string,
     } | null >,
@@ -322,13 +322,14 @@ export type ListCharitiesQuery = {
   } | null,
 };
 
-export type OnCreateCharitySubscriptionVariables = {
-  filter?: ModelSubscriptionCharityFilterInput | null,
+export type OnCreateCharitiesWithCategoriesSubscriptionVariables = {
+  filter?: ModelSubscriptionCharitiesWithCategoriesFilterInput | null,
 };
 
-export type OnCreateCharitySubscription = {
-  onCreateCharity?:  {
-    __typename: "Charity",
+export type OnCreateCharitiesWithCategoriesSubscription = {
+  onCreateCharitiesWithCategories?:  {
+    __typename: "CharitiesWithCategories",
+    id?: string | null,
     name: string,
     mission?: string | null,
     email?: string | null,
@@ -339,19 +340,19 @@ export type OnCreateCharitySubscription = {
     processLink?: string | null,
     product?: string | null,
     category?: string | null,
-    id: string,
     createdAt: string,
     updatedAt: string,
   } | null,
 };
 
-export type OnUpdateCharitySubscriptionVariables = {
-  filter?: ModelSubscriptionCharityFilterInput | null,
+export type OnUpdateCharitiesWithCategoriesSubscriptionVariables = {
+  filter?: ModelSubscriptionCharitiesWithCategoriesFilterInput | null,
 };
 
-export type OnUpdateCharitySubscription = {
-  onUpdateCharity?:  {
-    __typename: "Charity",
+export type OnUpdateCharitiesWithCategoriesSubscription = {
+  onUpdateCharitiesWithCategories?:  {
+    __typename: "CharitiesWithCategories",
+    id?: string | null,
     name: string,
     mission?: string | null,
     email?: string | null,
@@ -362,19 +363,19 @@ export type OnUpdateCharitySubscription = {
     processLink?: string | null,
     product?: string | null,
     category?: string | null,
-    id: string,
     createdAt: string,
     updatedAt: string,
   } | null,
 };
 
-export type OnDeleteCharitySubscriptionVariables = {
-  filter?: ModelSubscriptionCharityFilterInput | null,
+export type OnDeleteCharitiesWithCategoriesSubscriptionVariables = {
+  filter?: ModelSubscriptionCharitiesWithCategoriesFilterInput | null,
 };
 
-export type OnDeleteCharitySubscription = {
-  onDeleteCharity?:  {
-    __typename: "Charity",
+export type OnDeleteCharitiesWithCategoriesSubscription = {
+  onDeleteCharitiesWithCategories?:  {
+    __typename: "CharitiesWithCategories",
+    id?: string | null,
     name: string,
     mission?: string | null,
     email?: string | null,
@@ -385,7 +386,6 @@ export type OnDeleteCharitySubscription = {
     processLink?: string | null,
     product?: string | null,
     category?: string | null,
-    id: string,
     createdAt: string,
     updatedAt: string,
   } | null,
