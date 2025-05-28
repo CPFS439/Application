@@ -155,3 +155,51 @@ export const onDeleteUser = /* GraphQL */ `subscription OnDeleteUser($filter: Mo
   APITypes.OnDeleteUserSubscriptionVariables,
   APITypes.OnDeleteUserSubscription
 >;
+export const onCreateBookmark = /* GraphQL */ `subscription OnCreateBookmark($filter: ModelSubscriptionBookmarkFilterInput) {
+  onCreateBookmark(filter: $filter) {
+    id
+    userId
+    charityName
+    charityId
+    category
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateBookmarkSubscriptionVariables,
+  APITypes.OnCreateBookmarkSubscription
+>;
+export const onUpdateBookmark = /* GraphQL */ `subscription OnUpdateBookmark($filter: ModelSubscriptionBookmarkFilterInput) {
+  onUpdateBookmark(filter: $filter) {
+    id
+    userId
+    charityName
+    charityId
+    category
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateBookmarkSubscriptionVariables,
+  APITypes.OnUpdateBookmarkSubscription
+>;
+export const onDeleteBookmark = /* GraphQL */ `subscription OnDeleteBookmark($filter: ModelSubscriptionBookmarkFilterInput) {
+  onDeleteBookmark(filter: $filter) {
+    id
+    userId
+    charityName
+    charityId
+    category
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteBookmarkSubscriptionVariables,
+  APITypes.OnDeleteBookmarkSubscription
+>;

@@ -167,3 +167,60 @@ export const deleteUser = /* GraphQL */ `mutation DeleteUser(
   APITypes.DeleteUserMutationVariables,
   APITypes.DeleteUserMutation
 >;
+export const createBookmark = /* GraphQL */ `mutation CreateBookmark(
+  $input: CreateBookmarkInput!
+  $condition: ModelBookmarkConditionInput
+) {
+  createBookmark(input: $input, condition: $condition) {
+    id
+    userId
+    charityName
+    charityId
+    category
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateBookmarkMutationVariables,
+  APITypes.CreateBookmarkMutation
+>;
+export const updateBookmark = /* GraphQL */ `mutation UpdateBookmark(
+  $input: UpdateBookmarkInput!
+  $condition: ModelBookmarkConditionInput
+) {
+  updateBookmark(input: $input, condition: $condition) {
+    id
+    userId
+    charityName
+    charityId
+    category
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.UpdateBookmarkMutationVariables,
+  APITypes.UpdateBookmarkMutation
+>;
+export const deleteBookmark = /* GraphQL */ `mutation DeleteBookmark(
+  $input: DeleteBookmarkInput!
+  $condition: ModelBookmarkConditionInput
+) {
+  deleteBookmark(input: $input, condition: $condition) {
+    id
+    userId
+    charityName
+    charityId
+    category
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.DeleteBookmarkMutationVariables,
+  APITypes.DeleteBookmarkMutation
+>;

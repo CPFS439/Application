@@ -7,11 +7,15 @@ import {
   Button,
   ActivityIndicator,
   Linking,
+  TouchableOpacity,
+  Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { globalStyles } from "../../../../styles/globalStyles";
 import { withAuthenticator } from "@aws-amplify/ui-react-native";
 import { generateClient } from "aws-amplify/api";
+import { Ionicons } from "@expo/vector-icons";
+import { getCurrentUser } from "aws-amplify/auth";
 
 // Define a query to get charity by name
 const getCharityByNameQuery = /* GraphQL */ `
@@ -34,6 +38,42 @@ const getCharityByNameQuery = /* GraphQL */ `
   }
 `;
 
+// Define a mutation to create a bookmark
+const createBookmarkMutation = /* GraphQL */ `
+  mutation CreateBookmark($input: CreateBookmarkInput!) {
+    createBookmark(input: $input) {
+      id
+      userId
+      charityName
+      charityId
+      category
+      createdAt
+    }
+  }
+`;
+
+// Define a mutation to delete a bookmark
+const deleteBookmarkMutation = /* GraphQL */ `
+  mutation DeleteBookmark($input: DeleteBookmarkInput!) {
+    deleteBookmark(input: $input) {
+      id
+    }
+  }
+`;
+
+// Define a query to check if a charity is bookmarked
+const getBookmarkQuery = /* GraphQL */ `
+  query GetBookmarkByUserAndCharity($userId: ID!, $charityName: String!) {
+    listBookmarks(
+      filter: { userId: { eq: $userId }, charityName: { eq: $charityName } }
+    ) {
+      items {
+        id
+      }
+    }
+  }
+`;
+
 const client = generateClient();
 
 function CharityDetailScreen() {
@@ -42,9 +82,57 @@ function CharityDetailScreen() {
   const [charity, setCharity] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [bookmarkId, setBookmarkId] = useState(null);
+  const [bookmarkLoading, setBookmarkLoading] = useState(false);
+  const [userId, setUserId] = useState(null);
 
   // Use the ID parameter as the charity name
   const charityName = decodeURIComponent(params.id?.toString() || "");
+
+  // Fetch user ID from Cognito
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const user = await getCurrentUser();
+        setUserId(user.userId || user.username || user.sub);
+      } catch (err) {
+        console.error("Error fetching user ID:", err);
+      }
+    };
+
+    fetchUserId();
+  }, []);
+
+  // Check if charity is bookmarked
+  useEffect(() => {
+    const checkBookmarkStatus = async () => {
+      if (!userId || !charityName) return;
+
+      try {
+        const response = await client.graphql({
+          query: getBookmarkQuery,
+          variables: {
+            userId: userId,
+            charityName: charityName,
+          },
+        });
+
+        const bookmarks = response.data.listBookmarks.items;
+        if (bookmarks && bookmarks.length > 0) {
+          setIsBookmarked(true);
+          setBookmarkId(bookmarks[0].id);
+        } else {
+          setIsBookmarked(false);
+          setBookmarkId(null);
+        }
+      } catch (err) {
+        console.error("Error checking bookmark status:", err);
+      }
+    };
+
+    checkBookmarkStatus();
+  }, [userId, charityName]);
 
   useEffect(() => {
     async function fetchCharityDetails() {
@@ -64,13 +152,7 @@ function CharityDetailScreen() {
           variables: { name: charityName },
         });
 
-        // Log the full response for debugging
-        console.log(
-          "Full GraphQL response:",
-          JSON.stringify(response, null, 2)
-        );
-
-        // Extract the charity from the response - FIXED: use listCharitiesWithCategories instead of listBetaCharities
+        // Extract the charity from the response
         const charities = response.data.listCharitiesWithCategories.items;
         console.log(
           "Charity query response:",
@@ -113,6 +195,52 @@ function CharityDetailScreen() {
         url = "https://" + url;
       }
       Linking.openURL(url);
+    }
+  };
+
+  const toggleBookmark = async () => {
+    if (!userId || !charity) {
+      Alert.alert("Error", "Unable to bookmark. Please try again later.");
+      return;
+    }
+
+    setBookmarkLoading(true);
+
+    try {
+      if (isBookmarked) {
+        // Delete bookmark
+        await client.graphql({
+          query: deleteBookmarkMutation,
+          variables: {
+            input: { id: bookmarkId },
+          },
+        });
+
+        setIsBookmarked(false);
+        setBookmarkId(null);
+      } else {
+        // Create bookmark
+        const response = await client.graphql({
+          query: createBookmarkMutation,
+          variables: {
+            input: {
+              userId: userId,
+              charityName: charity.name,
+              charityId: charity.id || "",
+              category: charity.category || "General",
+            },
+          },
+        });
+
+        const newBookmark = response.data.createBookmark;
+        setIsBookmarked(true);
+        setBookmarkId(newBookmark.id);
+      }
+    } catch (err) {
+      console.error("Error toggling bookmark:", err);
+      Alert.alert("Error", "Failed to update bookmark. Please try again.");
+    } finally {
+      setBookmarkLoading(false);
     }
   };
 
@@ -160,7 +288,24 @@ function CharityDetailScreen() {
         </View>
 
         <View style={styles.infoSection}>
-          <Text style={styles.sectionTitle}>Details</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Details</Text>
+            <TouchableOpacity
+              style={styles.bookmarkButton}
+              onPress={toggleBookmark}
+              disabled={bookmarkLoading}
+            >
+              {bookmarkLoading ? (
+                <ActivityIndicator size="small" color="#13345c" />
+              ) : (
+                <Ionicons
+                  name={isBookmarked ? "bookmark" : "bookmark-outline"}
+                  size={24}
+                  color={isBookmarked ? "#d23631" : "#13345c"}
+                />
+              )}
+            </TouchableOpacity>
+          </View>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Website:</Text>
             <Text
@@ -218,12 +363,12 @@ function CharityDetailScreen() {
 const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
-    backgroundColor: "#f5f5f5", // Changed to match app's light background
+    backgroundColor: "#f5f5f5",
   },
   container: {
     flex: 1,
     padding: 16,
-    paddingTop: 20, // Reduced top padding to remove extra space
+    paddingTop: 20,
   },
   loadingContainer: {
     flex: 1,
@@ -264,7 +409,7 @@ const styles = StyleSheet.create({
   infoSection: {
     width: "100%",
     marginBottom: 20,
-    backgroundColor: "#fff", // Changed to white background with border
+    backgroundColor: "#fff",
     padding: 16,
     borderRadius: 8,
     shadowColor: "#000",
@@ -273,16 +418,26 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
+  // Section header with bookmark
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
+    color: "#13345c",
     marginBottom: 10,
-    color: "#13345c", // Changed to match app's blue color
+  },
+  bookmarkButton: {
+    padding: 4,
   },
   description: {
     fontSize: 16,
     lineHeight: 24,
-    color: "#555", // Changed to darker text for better readability
+    color: "#555",
     marginBottom: 8,
   },
   detailRow: {
@@ -293,12 +448,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     width: 120,
-    color: "#13345c", // Changed to match app's blue color
+    color: "#13345c",
   },
   detailValue: {
     fontSize: 16,
     flex: 1,
-    color: "#555", // Changed to darker text for better readability
+    color: "#555",
   },
   link: {
     color: "#3498db",

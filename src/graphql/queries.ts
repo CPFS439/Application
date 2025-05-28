@@ -108,3 +108,43 @@ export const listUsers = /* GraphQL */ `query ListUsers(
   }
 }
 ` as GeneratedQuery<APITypes.ListUsersQueryVariables, APITypes.ListUsersQuery>;
+export const getBookmark = /* GraphQL */ `query GetBookmark($id: ID!) {
+  getBookmark(id: $id) {
+    id
+    userId
+    charityName
+    charityId
+    category
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetBookmarkQueryVariables,
+  APITypes.GetBookmarkQuery
+>;
+export const listBookmarks = /* GraphQL */ `query ListBookmarks(
+  $filter: ModelBookmarkFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listBookmarks(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      id
+      userId
+      charityName
+      charityId
+      category
+      createdAt
+      updatedAt
+      __typename
+    }
+    nextToken
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.ListBookmarksQueryVariables,
+  APITypes.ListBookmarksQuery
+>;

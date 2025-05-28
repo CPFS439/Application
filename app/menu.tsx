@@ -129,11 +129,6 @@ const MenuScreen = () => {
     },
     {
       title: "CPFS Orders",
-      icon: "receipt-outline",
-      route: "/protected/orders",
-    },
-    {
-      title: "My Saved Submissions",
       icon: "bookmark-outline",
       route: "/protected/saved",
     },

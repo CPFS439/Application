@@ -34,3 +34,12 @@ type Address {
   zipCode: String
   country: String
 }
+
+type Bookmark @model {
+  id: ID!
+  userId: ID!
+  charityName: String!
+  charityId: String
+  category: String
+  createdAt: AWSDateTime
+}

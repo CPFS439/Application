@@ -176,6 +176,67 @@ export type DeleteUserInput = {
   id: string,
 };
 
+export type CreateBookmarkInput = {
+  id?: string | null,
+  userId: string,
+  charityName: string,
+  charityId?: string | null,
+  category?: string | null,
+  createdAt?: string | null,
+};
+
+export type ModelBookmarkConditionInput = {
+  userId?: ModelIDInput | null,
+  charityName?: ModelStringInput | null,
+  charityId?: ModelStringInput | null,
+  category?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  and?: Array< ModelBookmarkConditionInput | null > | null,
+  or?: Array< ModelBookmarkConditionInput | null > | null,
+  not?: ModelBookmarkConditionInput | null,
+  updatedAt?: ModelStringInput | null,
+};
+
+export type ModelIDInput = {
+  ne?: string | null,
+  eq?: string | null,
+  le?: string | null,
+  lt?: string | null,
+  ge?: string | null,
+  gt?: string | null,
+  contains?: string | null,
+  notContains?: string | null,
+  between?: Array< string | null > | null,
+  beginsWith?: string | null,
+  attributeExists?: boolean | null,
+  attributeType?: ModelAttributeTypes | null,
+  size?: ModelSizeInput | null,
+};
+
+export type Bookmark = {
+  __typename: "Bookmark",
+  id: string,
+  userId: string,
+  charityName: string,
+  charityId?: string | null,
+  category?: string | null,
+  createdAt?: string | null,
+  updatedAt: string,
+};
+
+export type UpdateBookmarkInput = {
+  id: string,
+  userId?: string | null,
+  charityName?: string | null,
+  charityId?: string | null,
+  category?: string | null,
+  createdAt?: string | null,
+};
+
+export type DeleteBookmarkInput = {
+  id: string,
+};
+
 export type ModelCharitiesWithCategoriesFilterInput = {
   id?: ModelIDInput | null,
   name?: ModelStringInput | null,
@@ -193,22 +254,6 @@ export type ModelCharitiesWithCategoriesFilterInput = {
   and?: Array< ModelCharitiesWithCategoriesFilterInput | null > | null,
   or?: Array< ModelCharitiesWithCategoriesFilterInput | null > | null,
   not?: ModelCharitiesWithCategoriesFilterInput | null,
-};
-
-export type ModelIDInput = {
-  ne?: string | null,
-  eq?: string | null,
-  le?: string | null,
-  lt?: string | null,
-  ge?: string | null,
-  gt?: string | null,
-  contains?: string | null,
-  notContains?: string | null,
-  between?: Array< string | null > | null,
-  beginsWith?: string | null,
-  attributeExists?: boolean | null,
-  attributeType?: ModelAttributeTypes | null,
-  size?: ModelSizeInput | null,
 };
 
 export type ModelCharitiesWithCategoriesConnection = {
@@ -234,6 +279,25 @@ export type ModelUserFilterInput = {
 export type ModelUserConnection = {
   __typename: "ModelUserConnection",
   items:  Array<User | null >,
+  nextToken?: string | null,
+};
+
+export type ModelBookmarkFilterInput = {
+  id?: ModelIDInput | null,
+  userId?: ModelIDInput | null,
+  charityName?: ModelStringInput | null,
+  charityId?: ModelStringInput | null,
+  category?: ModelStringInput | null,
+  createdAt?: ModelStringInput | null,
+  updatedAt?: ModelStringInput | null,
+  and?: Array< ModelBookmarkFilterInput | null > | null,
+  or?: Array< ModelBookmarkFilterInput | null > | null,
+  not?: ModelBookmarkFilterInput | null,
+};
+
+export type ModelBookmarkConnection = {
+  __typename: "ModelBookmarkConnection",
+  items:  Array<Bookmark | null >,
   nextToken?: string | null,
 };
 
@@ -296,6 +360,18 @@ export type ModelSubscriptionUserFilterInput = {
   updatedAt?: ModelSubscriptionStringInput | null,
   and?: Array< ModelSubscriptionUserFilterInput | null > | null,
   or?: Array< ModelSubscriptionUserFilterInput | null > | null,
+};
+
+export type ModelSubscriptionBookmarkFilterInput = {
+  id?: ModelSubscriptionIDInput | null,
+  userId?: ModelSubscriptionIDInput | null,
+  charityName?: ModelSubscriptionStringInput | null,
+  charityId?: ModelSubscriptionStringInput | null,
+  category?: ModelSubscriptionStringInput | null,
+  createdAt?: ModelSubscriptionStringInput | null,
+  updatedAt?: ModelSubscriptionStringInput | null,
+  and?: Array< ModelSubscriptionBookmarkFilterInput | null > | null,
+  or?: Array< ModelSubscriptionBookmarkFilterInput | null > | null,
 };
 
 export type CreateCharitiesWithCategoriesMutationVariables = {
@@ -451,6 +527,60 @@ export type DeleteUserMutation = {
   } | null,
 };
 
+export type CreateBookmarkMutationVariables = {
+  input: CreateBookmarkInput,
+  condition?: ModelBookmarkConditionInput | null,
+};
+
+export type CreateBookmarkMutation = {
+  createBookmark?:  {
+    __typename: "Bookmark",
+    id: string,
+    userId: string,
+    charityName: string,
+    charityId?: string | null,
+    category?: string | null,
+    createdAt?: string | null,
+    updatedAt: string,
+  } | null,
+};
+
+export type UpdateBookmarkMutationVariables = {
+  input: UpdateBookmarkInput,
+  condition?: ModelBookmarkConditionInput | null,
+};
+
+export type UpdateBookmarkMutation = {
+  updateBookmark?:  {
+    __typename: "Bookmark",
+    id: string,
+    userId: string,
+    charityName: string,
+    charityId?: string | null,
+    category?: string | null,
+    createdAt?: string | null,
+    updatedAt: string,
+  } | null,
+};
+
+export type DeleteBookmarkMutationVariables = {
+  input: DeleteBookmarkInput,
+  condition?: ModelBookmarkConditionInput | null,
+};
+
+export type DeleteBookmarkMutation = {
+  deleteBookmark?:  {
+    __typename: "Bookmark",
+    id: string,
+    userId: string,
+    charityName: string,
+    charityId?: string | null,
+    category?: string | null,
+    createdAt?: string | null,
+    updatedAt: string,
+  } | null,
+};
+
 export type GetCharitiesWithCategoriesQueryVariables = {
   id: string,
 };
@@ -547,6 +677,46 @@ export type ListUsersQuery = {
       phoneNumber?: string | null,
       profilePicture?: string | null,
       createdAt: string,
+      updatedAt: string,
+    } | null >,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type GetBookmarkQueryVariables = {
+  id: string,
+};
+
+export type GetBookmarkQuery = {
+  getBookmark?:  {
+    __typename: "Bookmark",
+    id: string,
+    userId: string,
+    charityName: string,
+    charityId?: string | null,
+    category?: string | null,
+    createdAt?: string | null,
+    updatedAt: string,
+  } | null,
+};
+
+export type ListBookmarksQueryVariables = {
+  filter?: ModelBookmarkFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListBookmarksQuery = {
+  listBookmarks?:  {
+    __typename: "ModelBookmarkConnection",
+    items:  Array< {
+      __typename: "Bookmark",
+      id: string,
+      userId: string,
+      charityName: string,
+      charityId?: string | null,
+      category?: string | null,
+      createdAt?: string | null,
       updatedAt: string,
     } | null >,
     nextToken?: string | null,
@@ -696,6 +866,57 @@ export type OnDeleteUserSubscription = {
       country?: string | null,
     } | null,
     createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnCreateBookmarkSubscriptionVariables = {
+  filter?: ModelSubscriptionBookmarkFilterInput | null,
+};
+
+export type OnCreateBookmarkSubscription = {
+  onCreateBookmark?:  {
+    __typename: "Bookmark",
+    id: string,
+    userId: string,
+    charityName: string,
+    charityId?: string | null,
+    category?: string | null,
+    createdAt?: string | null,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnUpdateBookmarkSubscriptionVariables = {
+  filter?: ModelSubscriptionBookmarkFilterInput | null,
+};
+
+export type OnUpdateBookmarkSubscription = {
+  onUpdateBookmark?:  {
+    __typename: "Bookmark",
+    id: string,
+    userId: string,
+    charityName: string,
+    charityId?: string | null,
+    category?: string | null,
+    createdAt?: string | null,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnDeleteBookmarkSubscriptionVariables = {
+  filter?: ModelSubscriptionBookmarkFilterInput | null,
+};
+
+export type OnDeleteBookmarkSubscription = {
+  onDeleteBookmark?:  {
+    __typename: "Bookmark",
+    id: string,
+    userId: string,
+    charityName: string,
+    charityId?: string | null,
+    category?: string | null,
+    createdAt?: string | null,
     updatedAt: string,
   } | null,
 };
