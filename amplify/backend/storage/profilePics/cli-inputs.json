@@ -1,0 +1,15 @@
+{
+  "resourceName": "profilePics",
+  "policyUUID": "a2f28c0a",
+  "bucketName": "cfsmarketplace753ab233c7554a058608200310f1b766",
+  "storageAccess": "authAndGuest",
+  "guestAccess": [
+    "READ"
+  ],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "groupAccess": {}
+}

@@ -16,3 +16,21 @@ type CharitiesWithCategories @model {
   product: String
   category: String
 }
+
+type User @model {
+  id: ID!
+  email: String!
+  militaryBranch: String
+  age: String
+  phoneNumber: String
+  profilePicture: String
+  address: Address
+}
+
+type Address {
+  street: String
+  city: String
+  state: String
+  zipCode: String
+  country: String
+}

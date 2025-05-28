@@ -80,3 +80,78 @@ export const onDeleteCharitiesWithCategories = /* GraphQL */ `subscription OnDel
   APITypes.OnDeleteCharitiesWithCategoriesSubscriptionVariables,
   APITypes.OnDeleteCharitiesWithCategoriesSubscription
 >;
+export const onCreateUser = /* GraphQL */ `subscription OnCreateUser($filter: ModelSubscriptionUserFilterInput) {
+  onCreateUser(filter: $filter) {
+    id
+    email
+    militaryBranch
+    age
+    phoneNumber
+    profilePicture
+    address {
+      street
+      city
+      state
+      zipCode
+      country
+      __typename
+    }
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnCreateUserSubscriptionVariables,
+  APITypes.OnCreateUserSubscription
+>;
+export const onUpdateUser = /* GraphQL */ `subscription OnUpdateUser($filter: ModelSubscriptionUserFilterInput) {
+  onUpdateUser(filter: $filter) {
+    id
+    email
+    militaryBranch
+    age
+    phoneNumber
+    profilePicture
+    address {
+      street
+      city
+      state
+      zipCode
+      country
+      __typename
+    }
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnUpdateUserSubscriptionVariables,
+  APITypes.OnUpdateUserSubscription
+>;
+export const onDeleteUser = /* GraphQL */ `subscription OnDeleteUser($filter: ModelSubscriptionUserFilterInput) {
+  onDeleteUser(filter: $filter) {
+    id
+    email
+    militaryBranch
+    age
+    phoneNumber
+    profilePicture
+    address {
+      street
+      city
+      state
+      zipCode
+      country
+      __typename
+    }
+    createdAt
+    updatedAt
+    __typename
+  }
+}
+` as GeneratedSubscription<
+  APITypes.OnDeleteUserSubscriptionVariables,
+  APITypes.OnDeleteUserSubscription
+>;

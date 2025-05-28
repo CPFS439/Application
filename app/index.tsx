@@ -131,7 +131,7 @@ export default function HomeScreen() {
         {/* Hero Image Section */}
         <View style={[styles.heroContainer, { width: screenDimensions.width }]}>
           <Image
-            source={require("../assets/images/splash-image.png")}
+            source={require("../assets/images/bridge_logo.png")}
             style={styles.heroImage}
             resizeMode="contain"
           />

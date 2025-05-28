@@ -35,6 +35,9 @@
       },
       "api": {
         "cfsmarketplace": {}
+      },
+      "storage": {
+        "profilePics": {}
       }
     }
   }

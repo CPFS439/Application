@@ -14,6 +14,74 @@ import {
 import { getCurrentUser } from "aws-amplify/auth";
 import { globalStyles } from "../../styles/globalStyles";
 import * as ImagePicker from "expo-image-picker";
+import { generateClient } from "aws-amplify/api";
+import { uploadData, getUrl, remove } from "aws-amplify/storage";
+import { v4 as uuidv4 } from "uuid";
+
+const client = generateClient();
+
+// GraphQL queries and mutations
+const getUserByEmailQuery = /* GraphQL */ `
+  query GetUserByEmail($email: String!) {
+    listUsers(filter: { email: { eq: $email } }) {
+      items {
+        id
+        email
+        militaryBranch
+        age
+        phoneNumber
+        profilePicture
+        address {
+          street
+          city
+          state
+          zipCode
+          country
+        }
+      }
+    }
+  }
+`;
+
+const createUserMutation = /* GraphQL */ `
+  mutation CreateUser($input: CreateUserInput!) {
+    createUser(input: $input) {
+      id
+      email
+      militaryBranch
+      age
+      phoneNumber
+      profilePicture
+      address {
+        street
+        city
+        state
+        zipCode
+        country
+      }
+    }
+  }
+`;
+
+const updateUserMutation = /* GraphQL */ `
+  mutation UpdateUser($input: UpdateUserInput!) {
+    updateUser(input: $input) {
+      id
+      email
+      militaryBranch
+      age
+      phoneNumber
+      profilePicture
+      address {
+        street
+        city
+        state
+        zipCode
+        country
+      }
+    }
+  }
+`;
 
 // Placeholder user profile data with added address fields
 const PLACEHOLDER_USER_PROFILE = {
@@ -32,13 +100,37 @@ const PLACEHOLDER_USER_PROFILE = {
 
 export default function ProfileScreen() {
   const [user, setUser] = useState(null);
-  const [userProfile, setUserProfile] = useState(PLACEHOLDER_USER_PROFILE);
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [profileImage, setProfileImage] = useState(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editedProfile, setEditedProfile] = useState({
     ...PLACEHOLDER_USER_PROFILE,
   });
+  const [imageLoading, setImageLoading] = useState(false);
+
+  // Function to fetch the profile image from S3
+  const fetchProfileImage = async (imageKey) => {
+    if (!imageKey) return null;
+
+    try {
+      console.log("Fetching image with key:", imageKey);
+
+      const imageUrl = await getUrl({
+        key: imageKey,
+        options: {
+          accessLevel: "private",
+          validateObjectExistence: true,
+        },
+      });
+
+      console.log("Image URL:", imageUrl.url.toString());
+      return imageUrl.url.toString();
+    } catch (error) {
+      console.error("Error fetching image from S3:", error);
+      return null;
+    }
+  };
 
   useEffect(() => {
     async function fetchUserData() {
@@ -47,10 +139,61 @@ export default function ProfileScreen() {
         const userData = await getCurrentUser();
         setUser(userData);
 
-        // Using placeholder data instead of DataStore
-        setUserProfile(PLACEHOLDER_USER_PROFILE);
+        if (userData && userData.signInDetails?.loginId) {
+          // Fetch user profile from GraphQL API
+          const email = userData.signInDetails.loginId;
+          const response = await client.graphql({
+            query: getUserByEmailQuery,
+            variables: { email },
+          });
+
+          console.log(
+            "User profile response:",
+            JSON.stringify(response, null, 2)
+          );
+
+          const userItems = response.data.listUsers.items;
+
+          if (userItems && userItems.length > 0) {
+            // User exists in database
+            const userProfileData = userItems[0];
+            setUserProfile(userProfileData);
+            setEditedProfile(userProfileData);
+
+            // Fetch profile image from S3 if available
+            if (userProfileData.profilePicture) {
+              const imageUrl = await fetchProfileImage(
+                userProfileData.profilePicture
+              );
+              if (imageUrl) {
+                setProfileImage(imageUrl);
+              }
+            }
+          } else {
+            // User doesn't exist, create a new user profile
+            console.log("User not found in database, creating new profile");
+            const newUser = {
+              email: email,
+              ...PLACEHOLDER_USER_PROFILE,
+            };
+
+            const createResponse = await client.graphql({
+              query: createUserMutation,
+              variables: {
+                input: newUser,
+              },
+            });
+
+            const createdUser = createResponse.data.createUser;
+            setUserProfile(createdUser);
+            setEditedProfile(createdUser);
+          }
+        }
       } catch (error) {
         console.error("Error fetching user data:", error);
+        // Fallback to placeholder data
+        setUserProfile(PLACEHOLDER_USER_PROFILE);
+        setEditedProfile(PLACEHOLDER_USER_PROFILE);
       } finally {
         setLoading(false);
       }
@@ -82,14 +225,94 @@ export default function ProfileScreen() {
     });
 
     if (!result.canceled) {
-      const newImage = result.assets[0].uri;
-      setProfileImage(newImage);
+      try {
+        setImageLoading(true);
+        const selectedImage = result.assets[0];
 
-      // Update local state only (no DataStore)
-      setUserProfile({
-        ...userProfile,
-        profilePicture: newImage,
-      });
+        // Generate a unique key for the image - THIS IS STEP 1 CODE
+        const imageKey = `profile-images/${userProfile.id}/${uuidv4()}`;
+        console.log("Uploading image with key:", imageKey);
+
+        // For web, we need to fetch the blob from the URI
+        let imageBlob;
+        if (Platform.OS === "web") {
+          const response = await fetch(selectedImage.uri);
+          imageBlob = await response.blob();
+        } else {
+          // For native platforms, we can use the URI directly
+          const response = await fetch(selectedImage.uri);
+          imageBlob = await response.blob();
+        }
+
+        // Upload the image to S3
+        await uploadData({
+          key: imageKey,
+          data: imageBlob,
+          options: {
+            accessLevel: "private", // Use private for authenticated users
+            contentType: "image/jpeg", // or the appropriate mime type
+          },
+        });
+
+        console.log("Image uploaded successfully");
+
+        // Get the URL of the uploaded image
+        const imageUrl = await fetchProfileImage(imageKey);
+        console.log("Retrieved image URL:", imageUrl);
+
+        if (imageUrl) {
+          setProfileImage(imageUrl);
+        } else {
+          // If we couldn't get the URL, at least show the local image temporarily
+          setProfileImage(selectedImage.uri);
+        }
+
+        // Delete the old image from S3 if it exists
+        if (userProfile.profilePicture) {
+          try {
+            await remove({
+              key: userProfile.profilePicture,
+              options: {
+                accessLevel: "private", // Use private for authenticated users
+              },
+            });
+            console.log("Old image deleted successfully");
+          } catch (error) {
+            console.error("Error deleting old image:", error);
+            // Continue even if deletion fails
+          }
+        }
+
+        // Update the user profile with the new image key - THIS IS ALSO PART OF STEP 1
+        if (userProfile && userProfile.id) {
+          try {
+            const updatedUser = {
+              id: userProfile.id,
+              profilePicture: imageKey, // Store just the key without the identity ID
+            };
+
+            const response = await client.graphql({
+              query: updateUserMutation,
+              variables: {
+                input: updatedUser,
+              },
+            });
+
+            // Update local state
+            const updatedUserData = response.data.updateUser;
+            setUserProfile(updatedUserData);
+            console.log("User profile updated with new image key");
+          } catch (updateError) {
+            console.error("Error updating user profile:", updateError);
+            Alert.alert("Error", "Failed to update profile with new image");
+          }
+        }
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        Alert.alert("Error", "Failed to upload profile picture");
+      } finally {
+        setImageLoading(false);
+      }
     }
   };
 
@@ -98,11 +321,35 @@ export default function ProfileScreen() {
     setEditModalVisible(true);
   };
 
-  const saveProfile = () => {
-    // In a real app, you would save to backend here
-    setUserProfile(editedProfile);
-    setEditModalVisible(false);
-    Alert.alert("Success", "Profile updated successfully");
+  const saveProfile = async () => {
+    try {
+      if (userProfile && userProfile.id) {
+        // Update existing user
+        const updatedUser = {
+          id: userProfile.id,
+          militaryBranch: editedProfile.militaryBranch,
+          age: editedProfile.age,
+          phoneNumber: editedProfile.phoneNumber,
+          address: editedProfile.address,
+        };
+
+        const response = await client.graphql({
+          query: updateUserMutation,
+          variables: {
+            input: updatedUser,
+          },
+        });
+
+        const updatedUserData = response.data.updateUser;
+        setUserProfile(updatedUserData);
+
+        setEditModalVisible(false);
+        Alert.alert("Success", "Profile updated successfully");
+      }
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      Alert.alert("Error", "Failed to update profile");
+    }
   };
 
   if (loading) {
@@ -131,8 +378,12 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.profileImageContainer}>
-          <TouchableOpacity onPress={pickImage}>
-            {profileImage ? (
+          <TouchableOpacity onPress={pickImage} disabled={imageLoading}>
+            {imageLoading ? (
+              <View style={styles.placeholderImage}>
+                <Text style={styles.loadingText}>Uploading...</Text>
+              </View>
+            ) : profileImage ? (
               <Image
                 source={{ uri: profileImage }}
                 style={styles.profileImage}
@@ -178,7 +429,7 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* New Address Section */}
+        {/* Address Section */}
         <View style={styles.infoSection}>
           <Text style={styles.sectionTitle}>Address</Text>
 
@@ -272,7 +523,7 @@ export default function ProfileScreen() {
               <Text style={styles.inputLabel}>Street</Text>
               <TextInput
                 style={styles.input}
-                value={editedProfile.address.street}
+                value={editedProfile.address?.street}
                 onChangeText={(text) =>
                   setEditedProfile({
                     ...editedProfile,
@@ -285,7 +536,7 @@ export default function ProfileScreen() {
               <Text style={styles.inputLabel}>City</Text>
               <TextInput
                 style={styles.input}
-                value={editedProfile.address.city}
+                value={editedProfile.address?.city}
                 onChangeText={(text) =>
                   setEditedProfile({
                     ...editedProfile,
@@ -298,7 +549,7 @@ export default function ProfileScreen() {
               <Text style={styles.inputLabel}>State</Text>
               <TextInput
                 style={styles.input}
-                value={editedProfile.address.state}
+                value={editedProfile.address?.state}
                 onChangeText={(text) =>
                   setEditedProfile({
                     ...editedProfile,
@@ -311,7 +562,7 @@ export default function ProfileScreen() {
               <Text style={styles.inputLabel}>Zip Code</Text>
               <TextInput
                 style={styles.input}
-                value={editedProfile.address.zipCode}
+                value={editedProfile.address?.zipCode}
                 onChangeText={(text) =>
                   setEditedProfile({
                     ...editedProfile,
@@ -325,7 +576,7 @@ export default function ProfileScreen() {
               <Text style={styles.inputLabel}>Country</Text>
               <TextInput
                 style={styles.input}
-                value={editedProfile.address.country}
+                value={editedProfile.address?.country}
                 onChangeText={(text) =>
                   setEditedProfile({
                     ...editedProfile,
@@ -402,6 +653,10 @@ const styles = StyleSheet.create({
   },
   placeholderText: {
     fontSize: 60,
+    color: "#888",
+  },
+  loadingText: {
+    fontSize: 16,
     color: "#888",
   },
   changePhotoText: {
