@@ -126,7 +126,7 @@ const CustomNavBar: React.FC = () => {
             isActive("/protected/charity") && styles.activeTabText,
           ]}
         >
-          Charity Services
+          Program Services
         </Text>
       </TouchableOpacity>
 

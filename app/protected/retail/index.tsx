@@ -5,6 +5,8 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Linking,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -12,7 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 export default function RetailServicesScreen() {
   const router = useRouter();
 
-  // Updated services data
+  // Updated services data with external URLs
   const cpfsServices = [
     {
       id: "1",
@@ -20,18 +22,21 @@ export default function RetailServicesScreen() {
       description:
         "Submit form to receive a new phone with 12 months of service.",
       icon: "phone-portrait-outline",
+      url: "https://www.cellphonesforsoldiers.com/veteran-phone-application/",
     },
     {
       id: "2",
       name: "Minutes that Matter",
       description: "Submit form to receive phone minutes for service members.",
       icon: "time-outline",
+      url: "https://www.cellphonesforsoldiers.com/minutes-that-matter-request-talk-time/",
     },
     {
       id: "3",
       name: "Helping Heroes Home",
       description: "Submit a request to receive financial assistance.",
       icon: "home-outline",
+      url: "https://www.cellphonesforsoldiers.com/veterans-aid-helping-heroes-home/",
     },
     {
       id: "4",
@@ -47,6 +52,24 @@ export default function RetailServicesScreen() {
     },
   ];
 
+  // Function to handle opening external URLs
+  const handleServicePress = (service) => {
+    if (service.url) {
+      // Open external URL if available
+      Linking.openURL(service.url).catch((err) => {
+        console.error("Error opening URL:", err);
+        if (Platform.OS === "web") {
+          window.alert("Could not open the link. Please try again later.");
+        } else {
+          alert("Could not open the link. Please try again later.");
+        }
+      });
+    } else {
+      // Fall back to the original navigation for services without URLs
+      router.push(`/protected/retail/${service.id}`);
+    }
+  };
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.headerText}>CPFS Services</Text>
@@ -60,7 +83,7 @@ export default function RetailServicesScreen() {
           <TouchableOpacity
             key={service.id}
             style={styles.serviceCard}
-            onPress={() => router.push(`/protected/retail/${service.id}`)}
+            onPress={() => handleServicePress(service)}
           >
             <View style={styles.serviceIconContainer}>
               <Ionicons name={service.icon} size={40} color="#3498db" />
