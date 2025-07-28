@@ -1,6 +1,8 @@
+import "react-native-get-random-values";
+import "react-native-url-polyfill/auto";
 import React from "react";
 import { Stack } from "expo-router";
-import { View, StyleSheet, Platform, StatusBar, Text } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import TopNavBar from "../components/TopNavBar";
 import CustomNavBar from "../components/CustomNavBar";
 import useFonts from "../hooks/useFonts";
@@ -43,6 +45,5 @@ const styles = StyleSheet.create({
   },
   stackContent: {
     backgroundColor: "#f5f5f5",
-    // No additional padding or margin here
   },
 });
