@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,9 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import MapComponent from "../../components/MapComponent";
+import vsoOfficesData from "../../data/vso-offices.json";
+import cpfsDropOffData from "../../data/cpfs-drop-off-locations.json";
+import homelessSheltersData from "../../data/homeless-shelters.json";
 
 const { width, height } = Dimensions.get("window");
 
@@ -30,72 +33,80 @@ export default function ServicesMapScreen() {
   const router = useRouter();
   const mapComponentRef = useRef<any>(null);
 
-  // Houston area veteran service locations
-  const veteranServices: Service[] = [
-    {
-      id: 1,
-      title: "Michael E. DeBakey VA Medical Center",
-      description: "Full-service medical facility and emergency care",
-      latitude: 29.703,
-      longitude: -95.401,
-      type: "hospital",
-      address: "2002 Holcombe Blvd, Houston, TX 77030",
-      phone: "(713) 791-1414",
-    },
-    {
-      id: 2,
-      title: "VA Outpatient Clinic - Northwest Houston",
-      description: "Primary care and specialty services",
-      latitude: 29.8735,
-      longitude: -95.5426,
-      type: "clinic",
-      address: "7400 Fannin St, Houston, TX 77054",
-      phone: "(713) 794-7100",
-    },
-    {
-      id: 3,
-      title: "Houston Vet Center",
-      description: "Counseling and mental health services",
-      latitude: 29.7372,
-      longitude: -95.4618,
-      type: "support",
-      address: "503 Westheimer Rd, Houston, TX 77006",
-      phone: "(713) 523-0884",
-    },
-    {
-      id: 4,
-      title: "VA Clinic - Southeast Houston",
-      description: "Outpatient medical services",
-      latitude: 29.6436,
-      longitude: -95.2784,
-      type: "clinic",
-      address: "8900 Telephone Rd, Houston, TX 77061",
-      phone: "(713) 794-7100",
-    },
-    {
-      id: 5,
-      title: "Cy-Fair VA Clinic",
-      description: "Primary care and mental health services",
-      latitude: 29.9857,
-      longitude: -95.6544,
-      type: "support",
-      address: "13550 Veterans Dr, Houston, TX 77014",
-      phone: "(281) 893-4400",
-    },
-  ];
+  // All veteran services with different types
+  const [veteranServices, setVeteranServices] = useState<Service[]>([]);
+  const [selectedFilter, setSelectedFilter] = useState<string>("all");
+
+  // Combine all service data (all coordinates are now pre-loaded in JSON files)
+  useEffect(() => {
+    const services: Service[] = [];
+    
+    // Add VSO offices (all have coordinates now)
+    vsoOfficesData.forEach((office, index) => {
+      if ((office as any).coordinates) {
+        services.push({
+          id: index + 1,
+          title: `${office.county} County VSO`,
+          description: `Veterans Service Office - ${office.director}`,
+          latitude: (office as any).coordinates[0],
+          longitude: (office as any).coordinates[1],
+          type: "vso_office",
+          address: office.address,
+          phone: office.workPhone,
+        });
+      }
+    });
+
+    // Add CPFS Drop-off locations (already have coordinates)
+    cpfsDropOffData.forEach((location, index) => {
+      services.push({
+        id: 100 + index,
+        title: location.name,
+        description: "Cell Phones For Soldiers Drop-off Location",
+        latitude: location.coordinates[0],
+        longitude: location.coordinates[1],
+        type: "cpfs_dropoff",
+        address: `${location.address}, ${location.cityStateZip}`,
+        phone: location.phone,
+      });
+    });
+
+    // Add Homeless Shelters (all have coordinates now)
+    homelessSheltersData.forEach((shelter, index) => {
+      if ((shelter as any).coordinates) {
+        services.push({
+          id: 200 + index,
+          title: shelter.name,
+          description: shelter.services,
+          latitude: (shelter as any).coordinates[0],
+          longitude: (shelter as any).coordinates[1],
+          type: "homeless_shelter",
+          address: `${shelter.address}, ${shelter.city}, ${shelter.state} ${shelter.zipCode}`,
+          phone: shelter.phone,
+        });
+      }
+    });
+    
+    setVeteranServices(services);
+  }, []);
 
   const handleServiceLocationPress = (service: Service) => {
-    // Zoom map to this location instead of showing alert
-    if (mapComponentRef.current && mapComponentRef.current.zoomToLocation) {
-      mapComponentRef.current.zoomToLocation(
+    // Zoom map to this location and open info window
+    if (mapComponentRef.current && mapComponentRef.current.zoomToLocationAndShowInfo) {
+      mapComponentRef.current.zoomToLocationAndShowInfo(
         service.latitude,
         service.longitude
       );
     }
   };
 
-  // Convert services to map locations format
-  const mapLocations = veteranServices.map((service) => ({
+  // Filter services based on selected filter
+  const filteredServices = selectedFilter === "all" 
+    ? veteranServices 
+    : veteranServices.filter(service => service.type === selectedFilter);
+
+  // Convert filtered services to map locations format
+  const mapLocations = filteredServices.map((service) => ({
     latitude: service.latitude,
     longitude: service.longitude,
     title: service.title,
@@ -105,12 +116,19 @@ export default function ServicesMapScreen() {
     type: service.type,
   }));
 
+  const filterOptions = [
+    { key: "all", label: "All Services", icon: "🔍", color: "#95a5a6" },
+    { key: "vso_office", label: "VSO Offices", icon: "🏢", color: "#2ecc71" },
+    { key: "cpfs_dropoff", label: "CPFS Drop-offs", icon: "📱", color: "#3498db" },
+    { key: "homeless_shelter", label: "Homeless Shelters", icon: "🏠", color: "#e74c3c" },
+  ];
+
   return (
     <View style={styles.container}>
       <View style={styles.headerSection}>
-        <Text style={styles.headerText}>Houston Area Veteran Services</Text>
+        <Text style={styles.headerText}>Veteran Services & Support</Text>
         <Text style={styles.subHeaderText}>
-          Find veteran services in the Houston area
+          Find veteran services, support centers, and drop-off locations
         </Text>
       </View>
 
@@ -119,63 +137,63 @@ export default function ServicesMapScreen() {
           ref={mapComponentRef}
           locations={mapLocations}
           initialRegion={{
-            latitude: 29.7604,
-            longitude: -95.3698,
-            zoom: 10,
+            latitude: 39.8283,
+            longitude: -98.5795,
+            zoom: 4,
           }}
           onMarkerPress={undefined} // Remove marker press functionality
         />
+
       </View>
 
       <ScrollView
         style={styles.bottomSheet}
         contentContainerStyle={styles.bottomSheetContent}
       >
-        <View style={styles.legendSection}>
-          <Text style={styles.legendTitle}>Service Types</Text>
-
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: "#e74c3c" }]} />
-            <Ionicons
-              name="medical"
-              size={16}
-              color="#e74c3c"
-              style={styles.legendIcon}
-            />
-            <Text style={styles.legendText}>VA Medical Centers</Text>
-          </View>
-
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: "#3498db" }]} />
-            <Ionicons
-              name="fitness"
-              size={16}
-              color="#3498db"
-              style={styles.legendIcon}
-            />
-            <Text style={styles.legendText}>VA Clinics</Text>
-          </View>
-
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: "#2ecc71" }]} />
-            <Ionicons
-              name="people"
-              size={16}
-              color="#2ecc71"
-              style={styles.legendIcon}
-            />
-            <Text style={styles.legendText}>Vet Centers</Text>
-          </View>
+        <View style={styles.filterSection}>
+          <Text style={styles.filterTitle}>Filter Services</Text>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={styles.filterScrollView}
+          >
+            {filterOptions.map((option) => (
+              <TouchableOpacity
+                key={option.key}
+                style={[
+                  styles.filterButton,
+                  selectedFilter === option.key && { backgroundColor: option.color },
+                  { borderColor: option.color }
+                ]}
+                onPress={() => setSelectedFilter(option.key)}
+              >
+                <Text style={styles.filterEmoji}>{option.icon}</Text>
+                <Text style={[
+                  styles.filterButtonText,
+                  { color: selectedFilter === option.key ? "#fff" : option.color }
+                ]}>
+                  {option.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
+
+
 
         <View style={styles.servicesListSection}>
           <Text style={styles.servicesListTitle}>
-            Service Locations ({veteranServices.length})
+            Service Locations ({filteredServices.length})
+            {selectedFilter !== "all" && (
+              <Text style={styles.filterIndicator}>
+                {" "}• {filterOptions.find(f => f.key === selectedFilter)?.label}
+              </Text>
+            )}
           </Text>
           <Text style={styles.servicesListSubtitle}>
             Tap any location to zoom the map
           </Text>
-          {veteranServices.map((service) => (
+          {filteredServices.map((service) => (
             <TouchableOpacity
               key={service.id}
               style={styles.serviceCard}
@@ -186,11 +204,13 @@ export default function ServicesMapScreen() {
                   styles.serviceTypeIndicator,
                   {
                     backgroundColor:
-                      service.type === "hospital"
-                        ? "#e74c3c"
-                        : service.type === "clinic"
+                      service.type === "vso_office"
+                        ? "#2ecc71"
+                        : service.type === "cpfs_dropoff"
                         ? "#3498db"
-                        : "#2ecc71",
+                        : service.type === "homeless_shelter"
+                        ? "#e74c3c"
+                        : "#95a5a6",
                   },
                 ]}
               />
@@ -346,4 +366,46 @@ const styles = StyleSheet.create({
     color: "#3498db",
     fontWeight: "500",
   },
+  filterSection: {
+    marginBottom: 20,
+    paddingBottom: 16,
+  },
+  filterTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#13345c",
+    marginBottom: 12,
+  },
+  filterScrollView: {
+    flexGrow: 0,
+  },
+  filterButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginRight: 8,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    backgroundColor: "#fff",
+    minWidth: 100,
+  },
+  filterButtonActive: {
+    backgroundColor: "#13345c",
+  },
+  filterEmoji: {
+    fontSize: 14,
+    marginRight: 6,
+  },
+  filterButtonText: {
+    fontSize: 12,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  filterIndicator: {
+    fontSize: 14,
+    color: "#666",
+    fontWeight: "normal",
+  },
+
 });
