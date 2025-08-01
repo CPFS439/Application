@@ -1,0 +1,212 @@
+[
+  {
+    "id": "cpfs_239",
+    "name": "Champlain Dental Group, Ltd.",
+    "type": "cpfs_dropoff",
+    "address": "150 Dorset Street",
+    "cityStateZip": "South Burlington, VT 05403",
+    "phone": "802-863-5335",
+    "email": "frontdesk@champlaindentalgroup.com",
+    "coordinates": [44.46496, -73.17934]
+  },
+  {
+    "id": "cpfs_305",
+    "name": "County of Pike, Veteran's Affairs",
+    "type": "cpfs_dropoff", 
+    "address": "514 Broad St",
+    "cityStateZip": "Milford, PA 18337",
+    "phone": "570-296-3563",
+    "email": "VeteransAffairs@pikepa.org",
+    "coordinates": [41.32488, -74.80008]
+  },
+  {
+    "id": "cpfs_467",
+    "name": "G & S Lyman, Inc.",
+    "type": "cpfs_dropoff",
+    "address": "81 W Orange Rd", 
+    "cityStateZip": "Orange, MA 01364",
+    "phone": "978-544-6765",
+    "email": "",
+    "coordinates": [42.59762, -72.33824]
+  },
+  {
+    "id": "cpfs_477",
+    "name": "Generazio Associates, Inc.",
+    "type": "cpfs_dropoff",
+    "address": "265 Broad St Ste 7",
+    "cityStateZip": "Bloomfield, NJ 07003", 
+    "phone": "973-429-8100",
+    "email": "",
+    "coordinates": [40.80316, -74.19496]
+  },
+  {
+    "id": "cpfs_3179",
+    "name": "Mofford Foundations, Inc.",
+    "type": "cpfs_dropoff",
+    "address": "39 Reynolds Ave.",
+    "cityStateZip": "Randolph, MA 02368",
+    "phone": "781-963-8238", 
+    "email": "johnsmofford62@gmail.com",
+    "coordinates": [42.17403, -71.04381]
+  },
+  {
+    "id": "cpfs_2081", 
+    "name": "SERVPRO of Malden/Melrose, Medford/Everett, Lynn/Lynnfield",
+    "type": "cpfs_dropoff",
+    "address": "177 West Foster Street",
+    "cityStateZip": "Melrose, MA 02176",
+    "phone": "",
+    "email": "esullivan@servpromedford.com",
+    "coordinates": [42.4553, -71.0689]
+  },
+  {
+    "id": "cpfs_3101",
+    "name": "Voice Comm, LLC", 
+    "type": "cpfs_dropoff",
+    "address": "80 Twinbridge Drive",
+    "cityStateZip": "Pennsauken, NJ 08110",
+    "phone": "856-406-3183",
+    "email": "equirk@myvoicecomm.com",
+    "coordinates": [39.98298, -75.02155]
+  },
+  {
+    "id": "cpfs_178",
+    "name": "Volunteer Center of South Jersey, Instructional Center, Room 410",
+    "type": "cpfs_dropoff",
+    "address": "1400 Tanyard Road",
+    "cityStateZip": "Sewell, NJ 08080",
+    "phone": "856-415-9084", 
+    "email": "mepifani@sjvolunteers.org",
+    "coordinates": [39.78106, -75.12307]
+  },
+  {
+    "id": "cpfs_4",
+    "name": "180 Kettlebell Gym and Fitness",
+    "type": "cpfs_dropoff",
+    "address": "6845 20th Ave S",
+    "cityStateZip": "Centerville, MN 55038",
+    "phone": "651-373-8336",
+    "email": "contact@180kbellgym.com", 
+    "coordinates": [45.15448, -93.04151]
+  },
+  {
+    "id": "cpfs_725",
+    "name": "3G Store",
+    "type": "cpfs_dropoff",
+    "address": "220 Exchange Drive, Suite A", 
+    "cityStateZip": "Crystal Lake, IL 60014",
+    "phone": "833-547-8673",
+    "email": "Melanie@3gstore.com",
+    "coordinates": [42.23439, -88.30464]
+  },
+  {
+    "id": "cpfs_11",
+    "name": "Action Towing Inc.",
+    "type": "cpfs_dropoff",
+    "address": "2511 Kiel Way",
+    "cityStateZip": "North Las Vegas, NV 89030",
+    "phone": "702-737-9100",
+    "email": "johnhowell@actiontowing.net",
+    "coordinates": [36.20513, -115.14066]
+  },
+  {
+    "id": "cpfs_1713",
+    "name": "Adair Funeral Homes Avalon Chapel",
+    "type": "cpfs_dropoff",
+    "address": "8090 N Northern Veterans and Family Memorial Care",
+    "cityStateZip": "Tucson, AZ 85704",
+    "phone": "520-742-7901",
+    "email": "avalon@adairfuneralhomes.com",
+    "coordinates": [32.35313, -110.97735]
+  },
+  {
+    "id": "cpfs_1711",
+    "name": "Adair Funeral Homes Caroon Mortuary",
+    "type": "cpfs_dropoff",
+    "address": "1191 N Grand Ave Veterans and Family Memorial Care",
+    "cityStateZip": "Nogales, AZ 85621",
+    "phone": "520-281-2424",
+    "email": "adaircaroonmortuary@outlook.com",
+    "coordinates": [31.3544, -110.92856]
+  },
+  {
+    "id": "cpfs_1712",
+    "name": "Adair Funeral Homes Dodge Chapel",
+    "type": "cpfs_dropoff",
+    "address": "1050 N Dodge Blvd Veterans and Family Memorial Care",
+    "cityStateZip": "Tucson, AZ 85716",
+    "phone": "520-326-4343",
+    "email": "dodge@adairfuneralhomes.com",
+    "coordinates": [32.23549, -110.91224]
+  },
+  {
+    "id": "cpfs_21",
+    "name": "Adams Bank and Trust",
+    "type": "cpfs_dropoff",
+    "address": "1201 Lake Ave",
+    "cityStateZip": "Berthoud, CO 80513",
+    "phone": "970-532-1800",
+    "email": "wlzimmerman@abtbank.com",
+    "coordinates": [40.30761, -105.09383]
+  },
+  {
+    "id": "cpfs_1714",
+    "name": "Adams Funeral Home",
+    "type": "cpfs_dropoff",
+    "address": "18034 Main St N Veterans and Family Memorial Care",
+    "cityStateZip": "Blountstown, FL 32424",
+    "phone": "850-674-5449",
+    "email": "tadams@adamsfh.com",
+    "coordinates": [30.45185, -85.05054]
+  },
+  {
+    "id": "cpfs_22",
+    "name": "Advance Disposal Company and Recycling Center",
+    "type": "cpfs_dropoff",
+    "address": "17105 Mesa St",
+    "cityStateZip": "Hesperia, CA 92340",
+    "phone": "760-244-9773",
+    "email": "info@advancedisposal.com",
+    "coordinates": [34.44505, -117.29047]
+  },
+  {
+    "id": "cpfs_2428",
+    "name": "Advanced Auto Body & Glass",
+    "type": "cpfs_dropoff",
+    "address": "2220 Main Avenue East Unit A",
+    "cityStateZip": "West Fargo, ND 58078",
+    "phone": "701-281-7081",
+    "email": "neil.krueger@advancedautobody.net",
+    "coordinates": [46.87711, -96.86448]
+  },
+  {
+    "id": "cpfs_3074",
+    "name": "Advanced Eye Institute",
+    "type": "cpfs_dropoff",
+    "address": "268 Corporate Dr",
+    "cityStateZip": "Houma, LA 70360",
+    "phone": "985-879-2393",
+    "email": "Karen.bergeron@friendlyeyecare.com",
+    "coordinates": [29.60123, -90.75163]
+  },
+  {
+    "id": "cpfs_25",
+    "name": "Advantage Self Storage",
+    "type": "cpfs_dropoff",
+    "address": "4161 Tylersville Rd",
+    "cityStateZip": "Hamilton, OH 45040",
+    "phone": "513-278-7980",
+    "email": "manager@advantagestoragehamilton.com",
+    "coordinates": [39.36104, -84.4803]
+  },
+  {
+    "id": "cpfs_24",
+    "name": "Advantage Self Storage",
+    "type": "cpfs_dropoff",
+    "address": "3600 Benner Rd",
+    "cityStateZip": "Miamisburg, OH 45342",
+    "phone": "937-634-9925",
+    "email": "manager@advantagestoragemiamisburg.com",
+    "coordinates": [39.61748, -84.23816]
+  }
+]
