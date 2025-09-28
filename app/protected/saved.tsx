@@ -17,10 +17,10 @@ import { withAuthenticator } from "@aws-amplify/ui-react-native";
 
 const client = generateClient();
 
-// Query to list bookmarks for a user
+// Query to list all bookmarks (we'll filter client-side by userId)
 const listBookmarksQuery = /* GraphQL */ `
-  query ListBookmarksByUser($userId: ID!) {
-    listBookmarks(filter: { userId: { eq: $userId } }) {
+  query ListBookmarks {
+    listBookmarks {
       items {
         id
         userId
@@ -58,7 +58,6 @@ function SavedBookmarksScreen() {
         const user = await getCurrentUser();
         setUserId(user.userId || user.username || user.sub);
       } catch (err) {
-        console.error("Error fetching user ID:", err);
         setError("Failed to authenticate user");
       } finally {
         setLoading(false);
@@ -82,22 +81,21 @@ function SavedBookmarksScreen() {
       setLoading(true);
       const response = await client.graphql({
         query: listBookmarksQuery,
-        variables: { userId: userId },
       });
 
-      console.log("Bookmarks response:", JSON.stringify(response, null, 2));
 
-      const bookmarkItems = response.data.listBookmarks.items;
+      // Get all bookmarks and filter by current user's ID
+      const allBookmarks = response.data.listBookmarks.items;
+      const userBookmarks = allBookmarks.filter(bookmark => bookmark.userId === userId);
 
       // Sort by creation date (newest first)
-      bookmarkItems.sort((a, b) => {
+      userBookmarks.sort((a, b) => {
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
 
-      setBookmarks(bookmarkItems);
+      setBookmarks(userBookmarks);
       setError(null);
     } catch (err) {
-      console.error("Error fetching bookmarks:", err);
       setError("Failed to load saved charities");
     } finally {
       setLoading(false);
@@ -114,7 +112,6 @@ function SavedBookmarksScreen() {
   const performRemoveBookmark = async (bookmarkId) => {
     try {
       setDeleteInProgress(true);
-      console.log("Deleting bookmark with ID:", bookmarkId);
 
       // Execute the delete mutation
       const result = await client.graphql({
@@ -124,15 +121,12 @@ function SavedBookmarksScreen() {
         },
       });
 
-      console.log("Delete result:", JSON.stringify(result, null, 2));
 
       // Update the local state by removing the deleted bookmark
       setBookmarks((prev) =>
         prev.filter((bookmark) => bookmark.id !== bookmarkId)
       );
     } catch (err) {
-      console.error("Error removing bookmark:", err);
-
       // Handle error alert based on platform - just like in menu.tsx
       if (Platform.OS === "web") {
         window.alert(
@@ -155,7 +149,6 @@ function SavedBookmarksScreen() {
 
   // Function to confirm deletion with the user
   const confirmRemoveBookmark = (bookmark) => {
-    console.log("Remove button pressed for:", bookmark.charityName);
 
     // Use different alert methods based on platform - just like in menu.tsx
     if (Platform.OS === "web") {
@@ -187,10 +180,10 @@ function SavedBookmarksScreen() {
     }
   };
 
-  const navigateToCharityDetails = (charityName) => {
-    router.push(
-      `/protected/charity/details/${encodeURIComponent(charityName)}`
-    );
+  const navigateToCharityDetails = (bookmark) => {
+    // Use charityId if available, otherwise fall back to charityName
+    const identifier = bookmark.charityId || encodeURIComponent(bookmark.charityName);
+    router.push(`/protected/charity/details/${identifier}`);
   };
 
   if (loading && !refreshing) {
@@ -234,7 +227,7 @@ function SavedBookmarksScreen() {
           renderItem={({ item }) => (
             <TouchableOpacity
               style={styles.bookmarkCard}
-              onPress={() => navigateToCharityDetails(item.charityName)}
+              onPress={() => navigateToCharityDetails(item)}
             >
               <View style={styles.bookmarkContent}>
                 <Text style={styles.charityName}>{item.charityName}</Text>

@@ -37,6 +37,35 @@ yarn-error.*
 
 app-example
 
+update-categories.ts
+migrate-charities.ts
+assets/*
+
+# Backup files and directories
+*backup*
+*_backup*
+backup_*
+*.bak
+*.backup
+*.orig
+amplify_backup_original/
+backup_docs/
+
+# Migration scripts and temporary files (only in root)
+/migration-*.js
+/migrate-*.js
+/setup-*.js
+/check-*.js
+/verify-*.js
+/debug-*.js
+/create-*.js
+/data-*.js
+/test-*.js
+/final-*.js
+/proper-*.js
+/tmp/test*.json
+/tmp/*query*.json
+
 #amplify-do-not-edit-begin
 amplify/\#current-cloud-backend
 amplify/.config/local-*
@@ -58,6 +87,3 @@ amplifytools.xcconfig
 .secret-*
 **.sample
 #amplify-do-not-edit-end
-update-categories.ts
-migrate-charities.ts
-assets/*

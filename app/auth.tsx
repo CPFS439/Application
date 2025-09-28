@@ -76,7 +76,6 @@ export default function AuthScreen() {
       await signIn({ username, password });
       router.replace("/protected/profile");
     } catch (err) {
-      console.error("Sign in error:", err);
       setError(err.message || "Error signing in");
     } finally {
       setLoading(false);
@@ -103,7 +102,6 @@ export default function AuthScreen() {
       });
       setAuthState(AUTH_STATE.CONFIRM_SIGN_UP);
     } catch (err) {
-      console.error("Sign up error:", err);
       setError(err.message || "Error signing up");
     } finally {
       setLoading(false);
@@ -124,7 +122,6 @@ export default function AuthScreen() {
       await confirmSignUp({ username, confirmationCode: code });
       setAuthState(AUTH_STATE.SIGN_IN);
     } catch (err) {
-      console.error("Confirm sign up error:", err);
       setError(err.message || "Error confirming sign up");
     } finally {
       setLoading(false);
@@ -145,7 +142,6 @@ export default function AuthScreen() {
       await resetPassword({ username });
       setAuthState(AUTH_STATE.CONFIRM_RESET_PASSWORD);
     } catch (err) {
-      console.error("Forgot password error:", err);
       setError(err.message || "Error resetting password");
     } finally {
       setLoading(false);
@@ -170,7 +166,6 @@ export default function AuthScreen() {
       });
       setAuthState(AUTH_STATE.SIGN_IN);
     } catch (err) {
-      console.error("Confirm reset password error:", err);
       setError(err.message || "Error confirming password reset");
     } finally {
       setLoading(false);

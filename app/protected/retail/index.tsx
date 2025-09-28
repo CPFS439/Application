@@ -43,12 +43,14 @@ export default function RetailServicesScreen() {
       name: "Evergreen Program",
       description: "Veterans request a CPFS Phone service at a reduced rate.",
       icon: "leaf-outline",
+      url: "https://www.cellphonesforsoldiers.com/evergreen-program/",
     },
     {
       id: "5",
       name: "Submit Phone Donation",
       description: "Submit phone donation to support at-risk-veterans.",
       icon: "gift-outline",
+      url: "https://www.cellphonesforsoldiers.com/donor-form/",
     },
   ];
 
@@ -57,7 +59,6 @@ export default function RetailServicesScreen() {
     if (service.url) {
       // Open external URL if available
       Linking.openURL(service.url).catch((err) => {
-        console.error("Error opening URL:", err);
         if (Platform.OS === "web") {
           window.alert("Could not open the link. Please try again later.");
         } else {

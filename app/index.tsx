@@ -105,7 +105,6 @@ export default function HomeScreen() {
           });
           setActiveInitiative(nextIndex);
         } catch (error) {
-          console.log("Scroll error:", error);
         }
       }
     }, 5000); // Change every 5 seconds

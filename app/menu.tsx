@@ -46,13 +46,10 @@ const MenuScreen = () => {
   // Function to perform sign out
   const performSignOut = async () => {
     try {
-      console.log("Attempting to sign out...");
       await signOut();
-      console.log("Sign out successful");
       setIsAuthenticated(false);
       router.replace("/");
     } catch (error) {
-      console.error("Error signing out:", error);
 
       // Handle error alert based on platform
       if (Platform.OS === "web") {
@@ -73,7 +70,6 @@ const MenuScreen = () => {
   };
 
   const handleSignOut = async () => {
-    console.log("Sign out button pressed");
 
     // Use different alert methods based on platform
     if (Platform.OS === "web") {

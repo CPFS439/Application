@@ -16,14 +16,14 @@ import { globalStyles } from "../../styles/globalStyles";
 import * as ImagePicker from "expo-image-picker";
 import { generateClient } from "aws-amplify/api";
 import { uploadData, getUrl, remove } from "aws-amplify/storage";
-import { v4 as uuidv4 } from "uuid";
+import * as Crypto from "expo-crypto";
 
 const client = generateClient();
 
 // GraphQL queries and mutations
 const getUserByEmailQuery = /* GraphQL */ `
-  query GetUserByEmail($email: String!) {
-    listUsers(filter: { email: { eq: $email } }) {
+  query ListUsers {
+    listUsers {
       items {
         id
         email
@@ -63,38 +63,18 @@ const createUserMutation = /* GraphQL */ `
   }
 `;
 
-const updateUserMutation = /* GraphQL */ `
-  mutation UpdateUser($input: UpdateUserInput!) {
-    updateUser(input: $input) {
-      id
-      email
-      militaryBranch
-      age
-      phoneNumber
-      profilePicture
-      address {
-        street
-        city
-        state
-        zipCode
-        country
-      }
-    }
-  }
-`;
-
-// Placeholder user profile data with added address fields
+// Empty user profile data for new users
 const PLACEHOLDER_USER_PROFILE = {
-  militaryBranch: "Air Force",
-  age: "28",
-  phoneNumber: "(555) 123-4567",
+  militaryBranch: "",
+  age: "",
+  phoneNumber: "",
   profilePicture: null,
   address: {
-    street: "123 Veterans Way",
-    city: "Arlington",
-    state: "VA",
-    zipCode: "22209",
-    country: "USA",
+    street: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "",
   },
 };
 
@@ -114,20 +94,15 @@ export default function ProfileScreen() {
     if (!imageKey) return null;
 
     try {
-      console.log("Fetching image with key:", imageKey);
-
       const imageUrl = await getUrl({
         key: imageKey,
         options: {
           accessLevel: "private",
-          validateObjectExistence: true,
         },
       });
 
-      console.log("Image URL:", imageUrl.url.toString());
       return imageUrl.url.toString();
     } catch (error) {
-      console.error("Error fetching image from S3:", error);
       return null;
     }
   };
@@ -144,15 +119,11 @@ export default function ProfileScreen() {
           const email = userData.signInDetails.loginId;
           const response = await client.graphql({
             query: getUserByEmailQuery,
-            variables: { email },
           });
 
-          console.log(
-            "User profile response:",
-            JSON.stringify(response, null, 2)
-          );
-
-          const userItems = response.data.listUsers.items;
+          // Filter users client-side by email
+          const allUsers = response.data.listUsers.items;
+          const userItems = allUsers.filter(user => user.email === email);
 
           if (userItems && userItems.length > 0) {
             // User exists in database
@@ -162,16 +133,13 @@ export default function ProfileScreen() {
 
             // Fetch profile image from S3 if available
             if (userProfileData.profilePicture) {
-              const imageUrl = await fetchProfileImage(
-                userProfileData.profilePicture
-              );
+              const imageUrl = await fetchProfileImage(userProfileData.profilePicture);
               if (imageUrl) {
                 setProfileImage(imageUrl);
               }
             }
           } else {
             // User doesn't exist, create a new user profile
-            console.log("User not found in database, creating new profile");
             const newUser = {
               email: email,
               ...PLACEHOLDER_USER_PROFILE,
@@ -190,7 +158,6 @@ export default function ProfileScreen() {
           }
         }
       } catch (error) {
-        console.error("Error fetching user data:", error);
         // Fallback to placeholder data
         setUserProfile(PLACEHOLDER_USER_PROFILE);
         setEditedProfile(PLACEHOLDER_USER_PROFILE);
@@ -203,6 +170,15 @@ export default function ProfileScreen() {
   }, []);
 
   const pickImage = async () => {
+    // Check if user profile is loaded and has an ID
+    if (!userProfile || !userProfile.id) {
+      Alert.alert(
+        "Profile Not Ready",
+        "Please wait for your profile to load before uploading a photo."
+      );
+      return;
+    }
+
     // Request permission
     if (Platform.OS !== "web") {
       const { status } =
@@ -229,9 +205,8 @@ export default function ProfileScreen() {
         setImageLoading(true);
         const selectedImage = result.assets[0];
 
-        // Generate a unique key for the image - THIS IS STEP 1 CODE
-        const imageKey = `profile-images/${userProfile.id}/${uuidv4()}`;
-        console.log("Uploading image with key:", imageKey);
+        // Generate a unique key for the image - ensure user ID is valid
+        const imageKey = `profile-images/${userProfile.id}/${Crypto.randomUUID()}`;
 
         // For web, we need to fetch the blob from the URI
         let imageBlob;
@@ -244,6 +219,9 @@ export default function ProfileScreen() {
           imageBlob = await response.blob();
         }
 
+        // Show uploading state (the loading spinner is already shown via imageLoading)
+        setProfileImage(null);
+
         // Upload the image to S3
         await uploadData({
           key: imageKey,
@@ -254,61 +232,65 @@ export default function ProfileScreen() {
           },
         });
 
-        console.log("Image uploaded successfully");
+        // Try to update the database using delete and recreate approach
+        try {
+          // First delete the existing user
+          await client.graphql({
+            query: /* GraphQL */ `
+              mutation DeleteUser($input: DeleteUserInput!) {
+                deleteUser(input: $input) {
+                  id
+                }
+              }
+            `,
+            variables: {
+              input: { id: userProfile.id }
+            }
+          });
 
-        // Get the URL of the uploaded image
-        const imageUrl = await fetchProfileImage(imageKey);
-        console.log("Retrieved image URL:", imageUrl);
+          // Then create a new user with the same data but new profile picture
+          const response = await client.graphql({
+            query: createUserMutation,
+            variables: {
+              input: {
+                id: userProfile.id,
+                email: userProfile.email,
+                militaryBranch: userProfile.militaryBranch || "",
+                age: userProfile.age || "",
+                phoneNumber: userProfile.phoneNumber || "",
+                profilePicture: imageKey,
+                address: userProfile.address || {
+                  street: "",
+                  city: "",
+                  state: "",
+                  zipCode: "",
+                  country: "",
+                },
+              }
+            }
+          });
 
-        if (imageUrl) {
-          setProfileImage(imageUrl);
-        } else {
-          // If we couldn't get the URL, at least show the local image temporarily
-          setProfileImage(selectedImage.uri);
-        }
+          const updatedUser = response.data.createUser;
+          setUserProfile(updatedUser);
 
-        // Delete the old image from S3 if it exists
-        if (userProfile.profilePicture) {
-          try {
-            await remove({
-              key: userProfile.profilePicture,
-              options: {
-                accessLevel: "private", // Use private for authenticated users
-              },
-            });
-            console.log("Old image deleted successfully");
-          } catch (error) {
-            console.error("Error deleting old image:", error);
-            // Continue even if deletion fails
+          // After successful database update, load the image from S3 (like page refresh)
+          const imageUrl = await fetchProfileImage(imageKey);
+          if (imageUrl) {
+            setProfileImage(imageUrl);
           }
-        }
+        } catch (dbError) {
+          // If database update fails, still update local state and try to load image
+          setUserProfile({
+            ...userProfile,
+            profilePicture: imageKey,
+          });
 
-        // Update the user profile with the new image key - THIS IS ALSO PART OF STEP 1
-        if (userProfile && userProfile.id) {
-          try {
-            const updatedUser = {
-              id: userProfile.id,
-              profilePicture: imageKey, // Store just the key without the identity ID
-            };
-
-            const response = await client.graphql({
-              query: updateUserMutation,
-              variables: {
-                input: updatedUser,
-              },
-            });
-
-            // Update local state
-            const updatedUserData = response.data.updateUser;
-            setUserProfile(updatedUserData);
-            console.log("User profile updated with new image key");
-          } catch (updateError) {
-            console.error("Error updating user profile:", updateError);
-            Alert.alert("Error", "Failed to update profile with new image");
+          const imageUrl = await fetchProfileImage(imageKey);
+          if (imageUrl) {
+            setProfileImage(imageUrl);
           }
         }
       } catch (error) {
-        console.error("Error uploading image:", error);
         Alert.alert("Error", "Failed to upload profile picture");
       } finally {
         setImageLoading(false);
@@ -324,30 +306,64 @@ export default function ProfileScreen() {
   const saveProfile = async () => {
     try {
       if (userProfile && userProfile.id) {
-        // Update existing user
-        const updatedUser = {
-          id: userProfile.id,
-          militaryBranch: editedProfile.militaryBranch,
-          age: editedProfile.age,
-          phoneNumber: editedProfile.phoneNumber,
-          address: editedProfile.address,
-        };
+        // Use delete and recreate approach since updateUser is broken
+        try {
+          // First delete the existing user
+          await client.graphql({
+            query: /* GraphQL */ `
+              mutation DeleteUser($input: DeleteUserInput!) {
+                deleteUser(input: $input) {
+                  id
+                }
+              }
+            `,
+            variables: {
+              input: { id: userProfile.id }
+            }
+          });
 
-        const response = await client.graphql({
-          query: updateUserMutation,
-          variables: {
-            input: updatedUser,
-          },
-        });
+          // Then create a new user with the updated data
+          const response = await client.graphql({
+            query: createUserMutation,
+            variables: {
+              input: {
+                id: userProfile.id,
+                email: userProfile.email,
+                militaryBranch: editedProfile.militaryBranch || "",
+                age: editedProfile.age || "",
+                phoneNumber: editedProfile.phoneNumber || "",
+                profilePicture: userProfile.profilePicture || null,
+                address: editedProfile.address || {
+                  street: "",
+                  city: "",
+                  state: "",
+                  zipCode: "",
+                  country: "",
+                },
+              }
+            }
+          });
 
-        const updatedUserData = response.data.updateUser;
-        setUserProfile(updatedUserData);
+          const updatedUser = response.data.createUser;
+          setUserProfile(updatedUser);
 
-        setEditModalVisible(false);
-        Alert.alert("Success", "Profile updated successfully");
+          setEditModalVisible(false);
+          Alert.alert("Success", "Profile updated successfully");
+        } catch (dbError) {
+          // If delete/create fails, just update local state
+          setUserProfile({
+            ...userProfile,
+            militaryBranch: editedProfile.militaryBranch,
+            age: editedProfile.age,
+            phoneNumber: editedProfile.phoneNumber,
+            address: editedProfile.address,
+          });
+
+          setEditModalVisible(false);
+          Alert.alert("Success", "Profile updated locally");
+        }
       }
     } catch (error) {
-      console.error("Error saving profile:", error);
       Alert.alert("Error", "Failed to update profile");
     }
   };

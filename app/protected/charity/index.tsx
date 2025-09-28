@@ -90,27 +90,15 @@ export default function CharityServicesScreen() {
         // Query the GraphQL API using the custom query
         const response = await client.graphql({ query: listCharitiesQuery });
 
-        // Log the full response for debugging
-        console.log(
-          "Full GraphQL response:",
-          JSON.stringify(response, null, 2)
-        );
 
         // Extract the charities from the response - updated to use listCharitiesWithCategories
         const charitiesData = response.data.listCharitiesWithCategories.items;
 
-        // Console log the results
-        console.log(
-          "Charities from API:",
-          JSON.stringify(charitiesData, null, 2)
-        );
-        console.log("Number of charities fetched:", charitiesData.length);
 
         // Set the charities state
         setCharities(charitiesData);
         setError(null);
       } catch (err) {
-        console.error("Error fetching charities:", err);
         setError("Failed to load charities. Please try again later.");
       } finally {
         setLoading(false);
@@ -192,9 +180,7 @@ export default function CharityServicesScreen() {
               style={styles.charityCard}
               onPress={() =>
                 router.push(
-                  `/protected/charity/details/${encodeURIComponent(
-                    charity.name
-                  )}`
+                  `/protected/charity/details/${charity.id}`
                 )
               }
             >

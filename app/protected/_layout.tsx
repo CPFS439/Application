@@ -15,8 +15,7 @@ export default function ProtectedLayout() {
         await getCurrentUser();
         setIsAuthenticated(true);
       } catch (error) {
-        console.log("Not authenticated", error);
-        // Redirect to home
+        // Not authenticated - redirect to home
         router.replace("/");
       } finally {
         setIsLoading(false);

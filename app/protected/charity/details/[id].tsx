@@ -17,23 +17,21 @@ import { generateClient } from "aws-amplify/api";
 import { Ionicons } from "@expo/vector-icons";
 import { getCurrentUser } from "aws-amplify/auth";
 
-// Define a query to get charity by name
-const getCharityByNameQuery = /* GraphQL */ `
-  query ListCharitiesWithCategories($name: String!) {
-    listCharitiesWithCategories(filter: { name: { eq: $name } }) {
-      items {
-        id
-        name
-        mission
-        email
-        phone
-        website
-        program
-        programDescription
-        processLink
-        product
-        category
-      }
+// Define a query to get charity by ID
+const getCharityByIdQuery = /* GraphQL */ `
+  query GetCharitiesWithCategories($id: ID!) {
+    getCharitiesWithCategories(id: $id) {
+      id
+      name
+      mission
+      email
+      phone
+      website
+      program
+      programDescription
+      processLink
+      product
+      category
     }
   }
 `;
@@ -61,14 +59,14 @@ const deleteBookmarkMutation = /* GraphQL */ `
   }
 `;
 
-// Define a query to check if a charity is bookmarked
+// Define a query to check if a charity is bookmarked (get all bookmarks, filter client-side)
 const getBookmarkQuery = /* GraphQL */ `
-  query GetBookmarkByUserAndCharity($userId: ID!, $charityName: String!) {
-    listBookmarks(
-      filter: { userId: { eq: $userId }, charityName: { eq: $charityName } }
-    ) {
+  query ListBookmarks {
+    listBookmarks {
       items {
         id
+        userId
+        charityName
       }
     }
   }
@@ -87,8 +85,8 @@ function CharityDetailScreen() {
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [userId, setUserId] = useState(null);
 
-  // Use the ID parameter as the charity name
-  const charityName = decodeURIComponent(params.id?.toString() || "");
+  // Use the ID parameter as the charity ID
+  const charityId = params.id?.toString() || "";
 
   // Fetch user ID from Cognito
   useEffect(() => {
@@ -97,7 +95,7 @@ function CharityDetailScreen() {
         const user = await getCurrentUser();
         setUserId(user.userId || user.username || user.sub);
       } catch (err) {
-        console.error("Error fetching user ID:", err);
+        // Error fetching user ID
       }
     };
 
@@ -107,74 +105,69 @@ function CharityDetailScreen() {
   // Check if charity is bookmarked
   useEffect(() => {
     const checkBookmarkStatus = async () => {
-      if (!userId || !charityName) return;
+      if (!userId || !charity?.name) return;
 
       try {
         const response = await client.graphql({
           query: getBookmarkQuery,
-          variables: {
-            userId: userId,
-            charityName: charityName,
-          },
         });
 
-        const bookmarks = response.data.listBookmarks.items;
-        if (bookmarks && bookmarks.length > 0) {
+        // Filter bookmarks client-side by userId and charityName
+        const allBookmarks = response.data.listBookmarks.items;
+        const userBookmark = allBookmarks.find(
+          bookmark => bookmark.userId === userId && bookmark.charityName === charity.name
+        );
+
+        if (userBookmark) {
           setIsBookmarked(true);
-          setBookmarkId(bookmarks[0].id);
+          setBookmarkId(userBookmark.id);
         } else {
           setIsBookmarked(false);
           setBookmarkId(null);
         }
       } catch (err) {
-        console.error("Error checking bookmark status:", err);
+        // Error checking bookmark status
       }
     };
 
     checkBookmarkStatus();
-  }, [userId, charityName]);
+  }, [userId, charity?.name]);
 
   useEffect(() => {
     async function fetchCharityDetails() {
-      if (!charityName) {
+      if (!charityId) {
         setLoading(false);
-        setError("No charity name provided");
+        setError("No charity ID provided");
         return;
       }
 
       try {
         setLoading(true);
-        console.log("Fetching charity with name:", charityName);
 
-        // Query the GraphQL API for the charity by name
+        // Query the GraphQL API for the charity by ID
         const response = await client.graphql({
-          query: getCharityByNameQuery,
-          variables: { name: charityName },
+          query: getCharityByIdQuery,
+          variables: { id: charityId },
         });
 
         // Extract the charity from the response
-        const charities = response.data.listCharitiesWithCategories.items;
-        console.log(
-          "Charity query response:",
-          JSON.stringify(charities, null, 2)
-        );
+        const charityData = response.data.getCharitiesWithCategories;
 
-        if (charities && charities.length > 0) {
-          setCharity(charities[0]);
+        if (charityData) {
+          setCharity(charityData);
           setError(null);
         } else {
           setError("Charity not found");
         }
       } catch (err) {
-        console.error("Error fetching charity details:", err);
-        setError(`Failed to load charity details: ${err.message}`);
+        setError("Failed to load charity details");
       } finally {
         setLoading(false);
       }
     }
 
     fetchCharityDetails();
-  }, [charityName]);
+  }, [charityId]);
 
   const handleWebsitePress = () => {
     if (charity?.website) {
@@ -237,7 +230,6 @@ function CharityDetailScreen() {
         setBookmarkId(newBookmark.id);
       }
     } catch (err) {
-      console.error("Error toggling bookmark:", err);
       Alert.alert("Error", "Failed to update bookmark. Please try again.");
     } finally {
       setBookmarkLoading(false);
