@@ -39,7 +39,6 @@ app-example
 
 update-categories.ts
 migrate-charities.ts
-assets/*
 
 # Backup files and directories
 *backup*
